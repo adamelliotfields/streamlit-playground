@@ -8,7 +8,7 @@ colorTo: green
 sdk: streamlit
 sdk_version: 1.37.1
 python_version: 3.11.9
-app_file: app.py
+app_file: 0_🏠_Home.py
 full_width: true
 pinned: true
 header: mini
