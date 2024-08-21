@@ -13,8 +13,19 @@ full_width: true
 pinned: true
 header: mini
 license: apache-2.0
+models:
+  - stabilityai/stable-diffusion-xl-base-1.0
+  - black-forest-labs/FLUX.1-schnell
+  - black-forest-labs/FLUX.1-dev
+  - codellama/CodeLlama-34b-Instruct-hf
+  - meta-llama/Llama-2-13b-chat-hf
+  - meta-llama/Meta-Llama-3.1-405B-Instruct-FP8
+  - mistralai/Mistral-7B-Instruct-v0.2
+  - NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO
 ---
 # ⚡ API Inference
+
+[Streamlit](https://streamlit.io) app for running inference on generative AI endpoints.
 
 ## Configuration
 
