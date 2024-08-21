@@ -13,13 +13,6 @@ from lib import Config, Presets
 HF_TOKEN = os.environ.get("HF_TOKEN")
 API_URL = "https://api-inference.huggingface.co/models"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}", "X-Wait-For-Model": "true", "X-Use-Cache": "false"}
-SIZE_AR = {
-    "9:7": (1152, 896),
-    "7:4": (1344, 768),
-    "1:1": (1024, 1024),
-    "4:7": (768, 1344),
-    "7:9": (896, 1152),
-}
 PRESET_MODEL = {
     "black-forest-labs/flux.1-dev": Presets.FLUX_1_DEV,
     "black-forest-labs/flux.1-schnell": Presets.FLUX_1_SCHNELL,
@@ -66,12 +59,12 @@ model = st.sidebar.selectbox(
     "Model",
     format_func=lambda x: x.split("/")[1],
     options=Config.TXT2IMG_MODELS,
-    index=Config.TXT2IMG_DEFAULT_INDEX,
+    index=Config.TXT2IMG_DEFAULT_MODEL,
 )
 aspect_ratio = st.sidebar.select_slider(
     "Aspect Ratio",
-    options=list(SIZE_AR.keys()),
-    value=list(SIZE_AR.keys())[1],
+    options=list(Config.TXT2IMG_AR.keys()),
+    value=Config.TXT2IMG_DEFAULT_AR,
 )
 
 # heading
@@ -85,9 +78,9 @@ parameters = {}
 preset = PRESET_MODEL[model]
 for param in preset["parameters"]:
     if param == "width":
-        parameters[param] = SIZE_AR[aspect_ratio][0]
+        parameters[param] = Config.TXT2IMG_AR[aspect_ratio][0]
     if param == "height":
-        parameters[param] = SIZE_AR[aspect_ratio][1]
+        parameters[param] = Config.TXT2IMG_AR[aspect_ratio][1]
     if param == "guidance_scale":
         parameters[param] = st.sidebar.slider(
             "Guidance Scale",

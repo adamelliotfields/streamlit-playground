@@ -42,7 +42,7 @@ model = st.sidebar.selectbox(
     "Model",
     placeholder="Select a model",
     format_func=lambda x: x.split("/")[1],
-    index=Config.TXT2TXT_DEFAULT_INDEX,
+    index=Config.TXT2TXT_DEFAULT_MODEL,
     options=Config.TXT2TXT_MODELS,
 )
 max_tokens = st.sidebar.slider(
