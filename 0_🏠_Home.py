@@ -39,10 +39,9 @@ st.html("""
     <h1 style="padding: 0; margin-bottom: 0.5rem">API Inference</h1>
     <span class="pro-badge">PRO</span>
 </div>
-<p>Run inference on API endpoints. Hugging Face for now; more coming soon!</p>
+<p>Inference on Huggingface, Perplexity, and Fal ⚡</p>
 """)
 
-# TODO: categorize tasks by service (SAI, FAL, etc)
 # content
 st.markdown("## Tasks")
 st.page_link("pages/1_💬_Text_Generation.py", label="Text Generation", icon="💬")

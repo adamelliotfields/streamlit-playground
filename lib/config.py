@@ -19,12 +19,24 @@ Config = SimpleNamespace(
         "7:9": (896, 1152),
         "4:7": (768, 1344),
     },
-    TXT2TXT_DEFAULT_MODEL=4,
-    TXT2TXT_MODELS=[
-        "codellama/codellama-34b-instruct-hf",
-        "meta-llama/llama-2-13b-chat-hf",
-        "meta-llama/meta-llama-3.1-405b-instruct-fp8",
-        "mistralai/mistral-7b-instruct-v0.2",
-        "nousresearch/nous-hermes-2-mixtral-8x7b-dpo",
-    ],
+    TXT2TXT_DEFAULT_SYSTEM="You are a helpful assistant. Be precise and concise.",
+    TXT2TXT_DEFAULT_MODEL={
+        "Huggingface": 4,
+        "Perplexity": 3,
+    },
+    TXT2TXT_MODELS={
+        "Huggingface": [
+            "codellama/codellama-34b-instruct-hf",
+            "meta-llama/llama-2-13b-chat-hf",
+            "meta-llama/meta-llama-3.1-405b-instruct-fp8",
+            "mistralai/mistral-7b-instruct-v0.2",
+            "nousresearch/nous-hermes-2-mixtral-8x7b-dpo",
+        ],
+        "Perplexity": [
+            "llama-3.1-sonar-small-128k-chat",
+            "llama-3.1-sonar-large-128k-chat",
+            "llama-3.1-sonar-small-128k-online",
+            "llama-3.1-sonar-large-128k-online",
+        ],
+    },
 )

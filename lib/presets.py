@@ -1,6 +1,22 @@
 from types import SimpleNamespace
 
-Presets = SimpleNamespace(
+ServicePresets = SimpleNamespace(
+    Huggingface={
+        # every service has model and system messages
+        "frequency_penalty": 0.0,
+        "frequency_penalty_min": -2.0,
+        "frequency_penalty_max": 2.0,
+        "parameters": ["max_tokens", "temperature", "frequency_penalty", "seed"],
+    },
+    Perplexity={
+        "frequency_penalty": 1.0,
+        "frequency_penalty_min": 1.0,
+        "frequency_penalty_max": 2.0,
+        "parameters": ["max_tokens", "temperature", "frequency_penalty"],
+    },
+)
+
+ModelPresets = SimpleNamespace(
     FLUX_1_DEV={
         "name": "FLUX.1 Dev",
         "num_inference_steps": 30,

@@ -3,7 +3,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import Config, HuggingFaceTxt2ImgAPI, Presets
+from lib import Config, HuggingFaceTxt2ImgAPI, ModelPresets
 
 # TODO: key input and store in cache_data
 # TODO: API dropdown; changes available models
@@ -11,9 +11,9 @@ HF_TOKEN = os.environ.get("HF_TOKEN")
 API_URL = "https://api-inference.huggingface.co/models"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}", "X-Wait-For-Model": "true", "X-Use-Cache": "false"}
 PRESET_MODEL = {
-    "black-forest-labs/flux.1-dev": Presets.FLUX_1_DEV,
-    "black-forest-labs/flux.1-schnell": Presets.FLUX_1_SCHNELL,
-    "stabilityai/stable-diffusion-xl-base-1.0": Presets.STABLE_DIFFUSION_XL,
+    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_1_DEV,
+    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_1_SCHNELL,
+    "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
 }
 
 

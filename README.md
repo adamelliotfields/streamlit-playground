@@ -46,6 +46,14 @@ STREAMLIT_SERVER_RUN_ON_SAVE=false
 STREAMLIT_BROWSER_SERVER_ADDRESS=adamelliotfields-api-inference.hf.space
 ```
 
+## Secrets
+
+```bash
+FAL_KEY=...
+HF_TOKEN=...
+PPLX_API_KEY=...
+```
+
 ## Installation
 
 ```sh
