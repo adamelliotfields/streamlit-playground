@@ -4,7 +4,7 @@ Config = SimpleNamespace(
     TITLE="API Inference",
     ICON="⚡",
     LAYOUT="wide",
-    TXT2IMG_NEGATIVE_PROMPT="ugly, bad, asymmetrical, malformed, mutated, disgusting, blurry, grainy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, autograph, trademark",
+    TXT2IMG_NEGATIVE_PROMPT="ugly, unattractive, malformed, mutated, disgusting, blurry, grainy, noisy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, autograph, trademark, sloppy, cluttered",
     TXT2IMG_DEFAULT_MODEL=2,
     TXT2IMG_MODELS=[
         "black-forest-labs/flux.1-dev",
@@ -13,11 +13,11 @@ Config = SimpleNamespace(
     ],
     TXT2IMG_DEFAULT_AR="1:1",
     TXT2IMG_AR={
-        "9:7": (1152, 896),
         "7:4": (1344, 768),
+        "9:7": (1152, 896),
         "1:1": (1024, 1024),
-        "4:7": (768, 1344),
         "7:9": (896, 1152),
+        "4:7": (768, 1344),
     },
     TXT2TXT_DEFAULT_MODEL=4,
     TXT2TXT_MODELS=[

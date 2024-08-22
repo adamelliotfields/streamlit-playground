@@ -1,12 +1,9 @@
-import io
 import os
 from datetime import datetime
 
-import requests
 import streamlit as st
-from PIL import Image
 
-from lib import Config, Presets
+from lib import Config, HuggingFaceTxt2ImgAPI, Presets
 
 # TODO: key input and store in cache_data
 # TODO: API dropdown; changes available models
@@ -20,22 +17,9 @@ PRESET_MODEL = {
 }
 
 
-def generate_image(model, prompt, parameters, **kwargs):
-    response = requests.post(
-        f"{API_URL}/{model}",
-        headers=HEADERS,
-        json={
-            "inputs": prompt,
-            "parameters": {**parameters, **kwargs},
-        },
-    )
-
-    if response.status_code == 200:
-        image = Image.open(io.BytesIO(response.content))
-        return image
-    else:
-        st.error(f"Error: {response.status_code} - {response.text}")
-        return None
+@st.cache_resource
+def get_txt2img_api():
+    return HuggingFaceTxt2ImgAPI(HF_TOKEN)
 
 
 # config
@@ -46,6 +30,9 @@ st.set_page_config(
 )
 
 # initialize state
+if "txt2img_running" not in st.session_state:
+    st.session_state.txt2img_running = False
+
 if "txt2img_messages" not in st.session_state:
     st.session_state.txt2img_messages = []
 
@@ -60,11 +47,13 @@ model = st.sidebar.selectbox(
     format_func=lambda x: x.split("/")[1],
     options=Config.TXT2IMG_MODELS,
     index=Config.TXT2IMG_DEFAULT_MODEL,
+    disabled=st.session_state.txt2img_running,
 )
 aspect_ratio = st.sidebar.select_slider(
     "Aspect Ratio",
     options=list(Config.TXT2IMG_AR.keys()),
     value=Config.TXT2IMG_DEFAULT_AR,
+    disabled=st.session_state.txt2img_running,
 )
 
 # heading
@@ -88,6 +77,7 @@ for param in preset["parameters"]:
             preset["guidance_scale_max"],
             preset["guidance_scale"],
             0.1,
+            disabled=st.session_state.txt2img_running,
         )
     if param == "num_inference_steps":
         parameters[param] = st.sidebar.slider(
@@ -96,6 +86,7 @@ for param in preset["parameters"]:
             preset["num_inference_steps_max"],
             preset["num_inference_steps"],
             1,
+            disabled=st.session_state.txt2img_running,
         )
     if param == "seed":
         parameters[param] = st.sidebar.number_input(
@@ -103,11 +94,13 @@ for param in preset["parameters"]:
             min_value=-1,
             max_value=(1 << 53) - 1,
             value=-1,
+            disabled=st.session_state.txt2img_running,
         )
     if param == "negative_prompt":
         parameters[param] = st.sidebar.text_area(
             label="Negative Prompt",
             value=Config.TXT2IMG_NEGATIVE_PROMPT,
+            disabled=st.session_state.txt2img_running,
         )
 
 # wrap the prompt in an expander to display additional parameters
@@ -142,7 +135,7 @@ for message in st.session_state.txt2img_messages:
                     }
                 </style>
                 """)
-                st.image(message["content"])
+                st.write(message["content"])  # success will be image, error will be text
 
 # button row
 if st.session_state.txt2img_messages:
@@ -162,13 +155,16 @@ if st.session_state.txt2img_messages:
         # retry
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("❌", help="Delete last generation") and len(st.session_state.txt2img_messages) >= 2:
+            if (
+                st.button("❌", help="Delete last generation", disabled=st.session_state.txt2img_running)
+                and len(st.session_state.txt2img_messages) >= 2
+            ):
                 st.session_state.txt2img_messages.pop()
                 st.session_state.txt2img_messages.pop()
                 st.rerun()
 
         with col2:
-            if st.button("🗑️", help="Clear all generations"):
+            if st.button("🗑️", help="Clear all generations", disabled=st.session_state.txt2img_running):
                 st.session_state.txt2img_messages = []
                 st.session_state.txt2img_seed = 0
                 st.rerun()
@@ -176,7 +172,10 @@ else:
     button_container = None
 
 # show the prompt and spinner while loading then update state and re-render
-if prompt := st.chat_input("What do you want to see?"):
+if prompt := st.chat_input(
+    "What do you want to see?",
+    on_submit=lambda: setattr(st.session_state, "txt2img_running", True),
+):
     if "seed" in parameters and parameters["seed"] >= 0:
         st.session_state.txt2img_seed = parameters["seed"]
     else:
@@ -195,7 +194,9 @@ if prompt := st.chat_input("What do you want to see?"):
             generate_kwargs = {"model": model, "prompt": prompt, "parameters": parameters}
             if preset.get("kwargs") is not None:
                 generate_kwargs.update(preset["kwargs"])
-            image = generate_image(**generate_kwargs)
+            api = get_txt2img_api()
+            image = api.generate_image(**generate_kwargs)
+        st.session_state.txt2img_running = False
 
     model_name = PRESET_MODEL[model]["name"]
     st.session_state.txt2img_messages.append(
