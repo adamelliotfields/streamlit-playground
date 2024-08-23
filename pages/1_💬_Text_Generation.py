@@ -5,9 +5,10 @@ import streamlit as st
 
 from lib import Config, ServicePresets, txt2txt_generate
 
-HF_TOKEN = os.environ.get("HF_TOKEN") or None
-PPLX_API_KEY = os.environ.get("PPLX_API_KEY") or None
-
+HF_TOKEN = None
+PERPLEXITY_API_KEY = None
+# HF_TOKEN = os.environ.get("HF_TOKEN") or None
+# PERPLEXITY_API_KEY = os.environ.get("PERPLEXITY_API_KEY") or None
 
 # config
 st.set_page_config(
@@ -51,9 +52,9 @@ if service == "Huggingface" and HF_TOKEN is None:
         value=st.session_state.api_key_huggingface,
     )
 else:
-    st.session_state.api_key_huggingface = None
+    st.session_state.api_key_huggingface = st.session_state.api_key_huggingface
 
-if service == "Perplexity" and PPLX_API_KEY is None:
+if service == "Perplexity" and PERPLEXITY_API_KEY is None:
     st.session_state.api_key_perplexity = st.sidebar.text_input(
         "API Key",
         type="password",
@@ -62,13 +63,13 @@ if service == "Perplexity" and PPLX_API_KEY is None:
         value=st.session_state.api_key_perplexity,
     )
 else:
-    st.session_state.api_key_perplexity = None
+    st.session_state.api_key_perplexity = st.session_state.api_key_perplexity
 
 if service == "Huggingface" and HF_TOKEN is not None:
     st.session_state.api_key_huggingface = HF_TOKEN
 
-if service == "Perplexity" and PPLX_API_KEY is not None:
-    st.session_state.api_key_perplexity = PPLX_API_KEY
+if service == "Perplexity" and PERPLEXITY_API_KEY is not None:
+    st.session_state.api_key_perplexity = PERPLEXITY_API_KEY
 
 model = st.sidebar.selectbox(
     "Model",

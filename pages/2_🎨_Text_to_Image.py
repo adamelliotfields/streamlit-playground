@@ -5,8 +5,10 @@ import streamlit as st
 
 from lib import Config, ModelPresets, txt2img_generate
 
-HF_TOKEN = os.environ.get("HF_TOKEN")
-FAL_KEY = os.environ.get("FAL_KEY")
+HF_TOKEN = None
+FAL_KEY = None
+# HF_TOKEN = os.environ.get("HF_TOKEN") or None
+# FAL_KEY = os.environ.get("FAL_KEY") or None
 API_URL = "https://api-inference.huggingface.co/models"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}", "X-Wait-For-Model": "true", "X-Use-Cache": "false"}
 PRESET_MODEL = {
@@ -54,10 +56,10 @@ if service == "Huggingface" and HF_TOKEN is None:
         type="password",
         help="Cleared on page refresh",
         value=st.session_state.api_key_huggingface,
-        disabled=st.session_state.txt2txt_running,
+        disabled=st.session_state.txt2img_running,
     )
 else:
-    st.session_state.api_key_huggingface = None
+    st.session_state.api_key_huggingface = st.session_state.api_key_huggingface
 
 if service == "Fal" and FAL_KEY is None:
     st.session_state.api_key_fal = st.sidebar.text_input(
@@ -65,10 +67,10 @@ if service == "Fal" and FAL_KEY is None:
         type="password",
         help="Cleared on page refresh",
         value=st.session_state.api_key_fal,
-        disabled=st.session_state.txt2txt_running,
+        disabled=st.session_state.txt2img_running,
     )
 else:
-    st.session_state.api_key_fal = None
+    st.session_state.api_key_fal = st.session_state.api_key_fal
 
 if service == "Huggingface" and HF_TOKEN is not None:
     st.session_state.api_key_huggingface = HF_TOKEN
