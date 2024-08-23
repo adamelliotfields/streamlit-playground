@@ -3,19 +3,10 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import Config, HuggingFaceTxt2TxtAPI, PerplexityTxt2TxtAPI, ServicePresets
+from lib import Config, ServicePresets, txt2txt_generate
 
 HF_TOKEN = os.environ.get("HF_TOKEN") or None
 PPLX_API_KEY = os.environ.get("PPLX_API_KEY") or None
-
-
-@st.cache_resource
-def get_txt2txt_api(service="Huggingface", api_key=None):
-    if service == "Huggingface":
-        return HuggingFaceTxt2TxtAPI(api_key)
-    if service == "Perplexity":
-        return PerplexityTxt2TxtAPI(api_key)
-    return None
 
 
 # config
@@ -26,14 +17,20 @@ st.set_page_config(
 )
 
 # initialize state
-if "txt2txt_running" not in st.session_state:
-    st.session_state.txt2txt_running = False
+if "api_key_huggingface" not in st.session_state:
+    st.session_state.api_key_huggingface = ""
+
+if "api_key_perplexity" not in st.session_state:
+    st.session_state.api_key_perplexity = ""
 
 if "txt2txt_messages" not in st.session_state:
     st.session_state.txt2txt_messages = []
 
 if "txt2txt_prompt" not in st.session_state:
     st.session_state.txt2txt_prompt = ""
+
+if "txt2txt_running" not in st.session_state:
+    st.session_state.txt2txt_running = False
 
 # sidebar
 st.logo("logo.svg")
@@ -45,22 +42,40 @@ service = st.sidebar.selectbox(
     disabled=st.session_state.txt2txt_running,
 )
 
-# hide key input if environment variables are set
-if (service == "Huggingface" and HF_TOKEN is None) or (service == "Perplexity" and PPLX_API_KEY is None):
-    api_key = st.sidebar.text_input(
+if service == "Huggingface" and HF_TOKEN is None:
+    st.session_state.api_key_huggingface = st.sidebar.text_input(
         "API Key",
-        value="",
         type="password",
         help="Cleared on page refresh",
         disabled=st.session_state.txt2txt_running,
+        value=st.session_state.api_key_huggingface,
     )
+else:
+    st.session_state.api_key_huggingface = None
+
+if service == "Perplexity" and PPLX_API_KEY is None:
+    st.session_state.api_key_perplexity = st.sidebar.text_input(
+        "API Key",
+        type="password",
+        help="Cleared on page refresh",
+        disabled=st.session_state.txt2txt_running,
+        value=st.session_state.api_key_perplexity,
+    )
+else:
+    st.session_state.api_key_perplexity = None
+
+if service == "Huggingface" and HF_TOKEN is not None:
+    st.session_state.api_key_huggingface = HF_TOKEN
+
+if service == "Perplexity" and PPLX_API_KEY is not None:
+    st.session_state.api_key_perplexity = PPLX_API_KEY
 
 model = st.sidebar.selectbox(
     "Model",
-    format_func=lambda x: x.split("/")[1] if service == "Huggingface" else x,
-    index=Config.TXT2TXT_DEFAULT_MODEL[service],
     options=Config.TXT2TXT_MODELS[service],
+    index=Config.TXT2TXT_DEFAULT_MODEL[service],
     disabled=st.session_state.txt2txt_running,
+    format_func=lambda x: x.split("/")[1] if service == "Huggingface" else x,
 )
 system = st.sidebar.text_area(
     "System Message",
@@ -70,51 +85,47 @@ system = st.sidebar.text_area(
 
 # build parameters from preset
 parameters = {}
-preset = getattr(ServicePresets, service)
+preset = getattr(ServicePresets, service, {})
 for param in preset["parameters"]:
     if param == "max_tokens":
         parameters[param] = st.sidebar.slider(
             "Max Tokens",
+            step=128,
+            value=512,
             min_value=512,
             max_value=4096,
-            value=512,
-            step=128,
-            help="Maximum number of tokens to generate (default: 512)",
             disabled=st.session_state.txt2txt_running,
+            help="Maximum number of tokens to generate (default: 512)",
         )
     if param == "temperature":
         parameters[param] = st.sidebar.slider(
             "Temperature",
+            step=0.1,
+            value=1.0,
             min_value=0.0,
             max_value=2.0,
-            value=1.0,
-            step=0.1,
-            help="Used to modulate the next token probabilities (default: 1.0)",
             disabled=st.session_state.txt2txt_running,
+            help="Used to modulate the next token probabilities (default: 1.0)",
         )
     if param == "frequency_penalty":
         parameters[param] = st.sidebar.slider(
             "Frequency Penalty",
+            step=0.1,
+            value=preset["frequency_penalty"],
             min_value=preset["frequency_penalty_min"],
             max_value=preset["frequency_penalty_max"],
-            value=preset["frequency_penalty"],
-            step=0.1,
-            help="Penalize new tokens based on their existing frequency in the text (default: 0.0)",
             disabled=st.session_state.txt2txt_running,
+            help="Penalize new tokens based on their existing frequency in the text (default: 0.0)",
         )
     if param == "seed":
         parameters[param] = st.sidebar.number_input(
             "Seed",
+            value=-1,
             min_value=-1,
             max_value=(1 << 53) - 1,
-            value=-1,
-            help="Make a best effort to sample deterministically (default: -1)",
             disabled=st.session_state.txt2txt_running,
+            help="Make a best effort to sample deterministically (default: -1)",
         )
-
-# random seed
-if parameters.get("seed", 0) < 0:
-    parameters["seed"] = int(datetime.now().timestamp() * 1e6) % (1 << 53)
 
 # heading
 st.html("""
@@ -173,9 +184,8 @@ if prompt := st.chat_input(
 ):
     st.session_state.txt2txt_prompt = prompt
 
-if st.session_state.txt2txt_prompt:
-    with st.chat_message("user"):
-        st.markdown(st.session_state.txt2txt_prompt)
+    if parameters.get("seed", 0) < 0:
+        parameters["seed"] = int(datetime.now().timestamp() * 1e6) % (1 << 53)
 
     if button_container:
         button_container.empty()
@@ -185,16 +195,12 @@ if st.session_state.txt2txt_prompt:
     messages.append({"role": "user", "content": st.session_state.txt2txt_prompt})
     parameters["messages"] = messages
 
+    with st.chat_message("user"):
+        st.markdown(st.session_state.txt2txt_prompt)
+
     with st.chat_message("assistant"):
-        # allow environment variables in development for convenience
-        if service == "Huggingface" and HF_TOKEN is not None:
-            key = HF_TOKEN
-        elif service == "Perplexity" and PPLX_API_KEY is not None:
-            key = PPLX_API_KEY
-        else:
-            key = api_key
-        api = get_txt2txt_api(service, key)
-        response = api.generate_text(model, parameters)
+        api_key = getattr(st.session_state, f"api_key_{service.lower()}", None)
+        response = txt2txt_generate(api_key, service, model, parameters)
         st.session_state.txt2txt_running = False
 
     st.session_state.txt2txt_messages.append({"role": "user", "content": st.session_state.txt2txt_prompt})

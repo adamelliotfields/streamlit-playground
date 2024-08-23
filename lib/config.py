@@ -4,6 +4,10 @@ Config = SimpleNamespace(
     TITLE="API Inference",
     ICON="⚡",
     LAYOUT="wide",
+    SERVICES={
+        "Huggingface": "https://api-inference.huggingface.co/models",
+        "Perplexity": "https://api.perplexity.ai",
+    },
     TXT2IMG_NEGATIVE_PROMPT="ugly, unattractive, malformed, mutated, disgusting, blurry, grainy, noisy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, autograph, trademark, sloppy, cluttered",
     TXT2IMG_DEFAULT_MODEL=2,
     TXT2IMG_MODELS=[

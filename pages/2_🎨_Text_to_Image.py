@@ -3,11 +3,10 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import Config, HuggingFaceTxt2ImgAPI, ModelPresets
+from lib import Config, ModelPresets, txt2img_generate
 
-# TODO: key input and store in cache_data
-# TODO: API dropdown; changes available models
 HF_TOKEN = os.environ.get("HF_TOKEN")
+FAL_KEY = os.environ.get("FAL_KEY")
 API_URL = "https://api-inference.huggingface.co/models"
 HEADERS = {"Authorization": f"Bearer {HF_TOKEN}", "X-Wait-For-Model": "true", "X-Use-Cache": "false"}
 PRESET_MODEL = {
@@ -15,12 +14,6 @@ PRESET_MODEL = {
     "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_1_SCHNELL,
     "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
 }
-
-
-@st.cache_resource
-def get_txt2img_api():
-    return HuggingFaceTxt2ImgAPI(HF_TOKEN)
-
 
 # config
 st.set_page_config(
@@ -30,11 +23,17 @@ st.set_page_config(
 )
 
 # initialize state
-if "txt2img_running" not in st.session_state:
-    st.session_state.txt2img_running = False
+if "api_key_fal" not in st.session_state:
+    st.session_state.api_key_fal = ""
+
+if "api_key_huggingface" not in st.session_state:
+    st.session_state.api_key_huggingface = ""
 
 if "txt2img_messages" not in st.session_state:
     st.session_state.txt2img_messages = []
+
+if "txt2img_running" not in st.session_state:
+    st.session_state.txt2img_running = False
 
 if "txt2img_seed" not in st.session_state:
     st.session_state.txt2img_seed = 0
@@ -42,12 +41,47 @@ if "txt2img_seed" not in st.session_state:
 # sidebar
 st.logo("logo.svg")
 st.sidebar.header("Settings")
+service = st.sidebar.selectbox(
+    "Service",
+    options=["Huggingface"],
+    index=0,
+    disabled=st.session_state.txt2img_running,
+)
+
+if service == "Huggingface" and HF_TOKEN is None:
+    st.session_state.api_key_huggingface = st.sidebar.text_input(
+        "API Key",
+        type="password",
+        help="Cleared on page refresh",
+        value=st.session_state.api_key_huggingface,
+        disabled=st.session_state.txt2txt_running,
+    )
+else:
+    st.session_state.api_key_huggingface = None
+
+if service == "Fal" and FAL_KEY is None:
+    st.session_state.api_key_fal = st.sidebar.text_input(
+        "API Key",
+        type="password",
+        help="Cleared on page refresh",
+        value=st.session_state.api_key_fal,
+        disabled=st.session_state.txt2txt_running,
+    )
+else:
+    st.session_state.api_key_fal = None
+
+if service == "Huggingface" and HF_TOKEN is not None:
+    st.session_state.api_key_huggingface = HF_TOKEN
+
+if service == "Fal" and FAL_KEY is not None:
+    st.session_state.api_key_fal = FAL_KEY
+
 model = st.sidebar.selectbox(
     "Model",
-    format_func=lambda x: x.split("/")[1],
     options=Config.TXT2IMG_MODELS,
     index=Config.TXT2IMG_DEFAULT_MODEL,
     disabled=st.session_state.txt2img_running,
+    format_func=lambda x: x.split("/")[1],
 )
 aspect_ratio = st.sidebar.select_slider(
     "Aspect Ratio",
@@ -191,11 +225,10 @@ if prompt := st.chat_input(
 
     with st.chat_message("assistant"):
         with st.spinner("Running..."):
-            generate_kwargs = {"model": model, "prompt": prompt, "parameters": parameters}
             if preset.get("kwargs") is not None:
-                generate_kwargs.update(preset["kwargs"])
-            api = get_txt2img_api()
-            image = api.generate_image(**generate_kwargs)
+                parameters.update(preset["kwargs"])
+            api_key = getattr(st.session_state, f"api_key_{service.lower()}", None)
+            image = txt2img_generate(api_key, service, model, prompt, parameters)
         st.session_state.txt2img_running = False
 
     model_name = PRESET_MODEL[model]["name"]

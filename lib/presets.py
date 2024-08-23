@@ -1,5 +1,6 @@
 from types import SimpleNamespace
 
+# txt2txt services
 ServicePresets = SimpleNamespace(
     Huggingface={
         # every service has model and system messages
@@ -16,6 +17,7 @@ ServicePresets = SimpleNamespace(
     },
 )
 
+# txt2img models
 ModelPresets = SimpleNamespace(
     FLUX_1_DEV={
         "name": "FLUX.1 Dev",
