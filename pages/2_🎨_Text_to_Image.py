@@ -5,16 +5,16 @@ import streamlit as st
 
 from lib import Config, ModelPresets, txt2img_generate
 
-HF_TOKEN = None
-FAL_KEY = None
-# HF_TOKEN = os.environ.get("HF_TOKEN") or None
-# FAL_KEY = os.environ.get("FAL_KEY") or None
-API_URL = "https://api-inference.huggingface.co/models"
-HEADERS = {"Authorization": f"Bearer {HF_TOKEN}", "X-Wait-For-Model": "true", "X-Use-Cache": "false"}
+HF_TOKEN = os.environ.get("HF_TOKEN") or None
+FAL_KEY = os.environ.get("FAL_KEY") or None
 PRESET_MODEL = {
-    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_1_DEV,
-    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_1_SCHNELL,
+    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV,
+    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL,
     "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
+    "fal-ai/fooocus": ModelPresets.FOOOCUS,
+    "fal-ai/kolors": ModelPresets.KOLORS,
+    "fal-ai/pixart-sigma": ModelPresets.PIXART_SIGMA,
+    "fal-ai/stable-diffusion-v3-medium": ModelPresets.STABLE_DIFFUSION_3,
 }
 
 # config
@@ -34,8 +34,8 @@ if "api_key_huggingface" not in st.session_state:
 if "txt2img_messages" not in st.session_state:
     st.session_state.txt2img_messages = []
 
-if "txt2img_running" not in st.session_state:
-    st.session_state.txt2img_running = False
+if "running" not in st.session_state:
+    st.session_state.running = False
 
 if "txt2img_seed" not in st.session_state:
     st.session_state.txt2img_seed = 0
@@ -45,9 +45,9 @@ st.logo("logo.svg")
 st.sidebar.header("Settings")
 service = st.sidebar.selectbox(
     "Service",
-    options=["Huggingface"],
-    index=0,
-    disabled=st.session_state.txt2img_running,
+    options=["Fal", "Huggingface"],
+    index=1,
+    disabled=st.session_state.running,
 )
 
 if service == "Huggingface" and HF_TOKEN is None:
@@ -56,7 +56,7 @@ if service == "Huggingface" and HF_TOKEN is None:
         type="password",
         help="Cleared on page refresh",
         value=st.session_state.api_key_huggingface,
-        disabled=st.session_state.txt2img_running,
+        disabled=st.session_state.running,
     )
 else:
     st.session_state.api_key_huggingface = st.session_state.api_key_huggingface
@@ -67,7 +67,7 @@ if service == "Fal" and FAL_KEY is None:
         type="password",
         help="Cleared on page refresh",
         value=st.session_state.api_key_fal,
-        disabled=st.session_state.txt2img_running,
+        disabled=st.session_state.running,
     )
 else:
     st.session_state.api_key_fal = st.session_state.api_key_fal
@@ -80,16 +80,10 @@ if service == "Fal" and FAL_KEY is not None:
 
 model = st.sidebar.selectbox(
     "Model",
-    options=Config.TXT2IMG_MODELS,
-    index=Config.TXT2IMG_DEFAULT_MODEL,
-    disabled=st.session_state.txt2img_running,
+    options=Config.TXT2IMG_MODELS[service],
+    index=Config.TXT2IMG_DEFAULT_MODEL[service],
+    disabled=st.session_state.running,
     format_func=lambda x: x.split("/")[1],
-)
-aspect_ratio = st.sidebar.select_slider(
-    "Aspect Ratio",
-    options=list(Config.TXT2IMG_AR.keys()),
-    value=Config.TXT2IMG_DEFAULT_AR,
-    disabled=st.session_state.txt2img_running,
 )
 
 # heading
@@ -102,10 +96,52 @@ st.html("""
 parameters = {}
 preset = PRESET_MODEL[model]
 for param in preset["parameters"]:
+    if param == "seed":
+        parameters[param] = st.sidebar.number_input(
+            "Seed",
+            min_value=-1,
+            max_value=(1 << 53) - 1,
+            value=-1,
+            disabled=st.session_state.running,
+        )
+    if param == "negative_prompt":
+        parameters[param] = st.sidebar.text_area(
+            "Negative Prompt",
+            value=Config.TXT2IMG_NEGATIVE_PROMPT,
+            disabled=st.session_state.running,
+        )
     if param == "width":
-        parameters[param] = Config.TXT2IMG_AR[aspect_ratio][0]
+        parameters[param] = st.sidebar.slider(
+            "Width",
+            step=64,
+            value=1024,
+            min_value=512,
+            max_value=2048,
+            disabled=st.session_state.running,
+        )
     if param == "height":
-        parameters[param] = Config.TXT2IMG_AR[aspect_ratio][1]
+        parameters[param] = st.sidebar.slider(
+            "Height",
+            step=64,
+            value=1024,
+            min_value=512,
+            max_value=2048,
+            disabled=st.session_state.running,
+        )
+    if param == "image_size":
+        parameters[param] = st.sidebar.select_slider(
+            "Image Size",
+            options=Config.TXT2IMG_IMAGE_SIZES,
+            value=Config.TXT2IMG_DEFAULT_IMAGE_SIZE,
+            disabled=st.session_state.running,
+        )
+    if param == "aspect_ratio":
+        parameters[param] = st.sidebar.select_slider(
+            "Aspect Ratio",
+            options=Config.TXT2IMG_ASPECT_RATIOS,
+            value=Config.TXT2IMG_DEFAULT_ASPECT_RATIO,
+            disabled=st.session_state.running,
+        )
     if param == "guidance_scale":
         parameters[param] = st.sidebar.slider(
             "Guidance Scale",
@@ -113,7 +149,7 @@ for param in preset["parameters"]:
             preset["guidance_scale_max"],
             preset["guidance_scale"],
             0.1,
-            disabled=st.session_state.txt2img_running,
+            disabled=st.session_state.running,
         )
     if param == "num_inference_steps":
         parameters[param] = st.sidebar.slider(
@@ -122,21 +158,19 @@ for param in preset["parameters"]:
             preset["num_inference_steps_max"],
             preset["num_inference_steps"],
             1,
-            disabled=st.session_state.txt2img_running,
+            disabled=st.session_state.running,
         )
-    if param == "seed":
-        parameters[param] = st.sidebar.number_input(
-            "Seed",
-            min_value=-1,
-            max_value=(1 << 53) - 1,
-            value=-1,
-            disabled=st.session_state.txt2img_running,
+    if param == "expand_prompt":
+        parameters[param] = st.sidebar.checkbox(
+            "Expand Prompt",
+            value=False,
+            disabled=st.session_state.running,
         )
-    if param == "negative_prompt":
-        parameters[param] = st.sidebar.text_area(
-            label="Negative Prompt",
-            value=Config.TXT2IMG_NEGATIVE_PROMPT,
-            disabled=st.session_state.txt2img_running,
+    if param == "prompt_expansion":
+        parameters[param] = st.sidebar.checkbox(
+            "Prompt Expansion",
+            value=False,
+            disabled=st.session_state.running,
         )
 
 # wrap the prompt in an expander to display additional parameters
@@ -154,8 +188,13 @@ for message in st.session_state.txt2img_messages:
                         div[data-testid="stMarkdownContainer"] p:not(:last-of-type) { margin-bottom: 0 }
                     </style>
                     """)
+                    filtered_parameters = {
+                        k: v
+                        for k, v in message["parameters"].items()
+                        if k not in Config.TXT2IMG_HIDDEN_PARAMETERS
+                    }
                     md = f"`model`: {message['model']}\n\n"
-                    md += "\n\n".join([f"`{k}`: {v}" for k, v in message["parameters"].items()])
+                    md += "\n\n".join([f"`{k}`: {v}" for k, v in filtered_parameters.items()])
                     st.markdown(md)
 
             if role == "assistant":
@@ -192,7 +231,7 @@ if st.session_state.txt2img_messages:
         col1, col2 = st.columns(2)
         with col1:
             if (
-                st.button("❌", help="Delete last generation", disabled=st.session_state.txt2img_running)
+                st.button("❌", help="Delete last generation", disabled=st.session_state.running)
                 and len(st.session_state.txt2img_messages) >= 2
             ):
                 st.session_state.txt2img_messages.pop()
@@ -200,7 +239,7 @@ if st.session_state.txt2img_messages:
                 st.rerun()
 
         with col2:
-            if st.button("🗑️", help="Clear all generations", disabled=st.session_state.txt2img_running):
+            if st.button("🗑️", help="Clear all generations", disabled=st.session_state.running):
                 st.session_state.txt2img_messages = []
                 st.session_state.txt2img_seed = 0
                 st.rerun()
@@ -210,7 +249,7 @@ else:
 # show the prompt and spinner while loading then update state and re-render
 if prompt := st.chat_input(
     "What do you want to see?",
-    on_submit=lambda: setattr(st.session_state, "txt2img_running", True),
+    on_submit=lambda: setattr(st.session_state, "running", True),
 ):
     if "seed" in parameters and parameters["seed"] >= 0:
         st.session_state.txt2img_seed = parameters["seed"]
@@ -231,7 +270,7 @@ if prompt := st.chat_input(
                 parameters.update(preset["kwargs"])
             api_key = getattr(st.session_state, f"api_key_{service.lower()}", None)
             image = txt2img_generate(api_key, service, model, prompt, parameters)
-        st.session_state.txt2img_running = False
+        st.session_state.running = False
 
     model_name = PRESET_MODEL[model]["name"]
     st.session_state.txt2img_messages.append(
