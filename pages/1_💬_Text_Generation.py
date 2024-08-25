@@ -5,10 +5,8 @@ import streamlit as st
 
 from lib import Config, ServicePresets, txt2txt_generate
 
-HF_TOKEN = None
-PERPLEXITY_API_KEY = None
-# HF_TOKEN = os.environ.get("HF_TOKEN") or None
-# PERPLEXITY_API_KEY = os.environ.get("PERPLEXITY_API_KEY") or None
+HF_TOKEN = os.environ.get("HF_TOKEN") or None
+PERPLEXITY_API_KEY = os.environ.get("PERPLEXITY_API_KEY") or None
 
 # config
 st.set_page_config(
@@ -24,14 +22,14 @@ if "api_key_huggingface" not in st.session_state:
 if "api_key_perplexity" not in st.session_state:
     st.session_state.api_key_perplexity = ""
 
+if "running" not in st.session_state:
+    st.session_state.running = False
+
 if "txt2txt_messages" not in st.session_state:
     st.session_state.txt2txt_messages = []
 
 if "txt2txt_prompt" not in st.session_state:
     st.session_state.txt2txt_prompt = ""
-
-if "txt2txt_running" not in st.session_state:
-    st.session_state.txt2txt_running = False
 
 # sidebar
 st.logo("logo.svg")
@@ -40,7 +38,7 @@ service = st.sidebar.selectbox(
     "Service",
     options=["Huggingface", "Perplexity"],
     index=0,
-    disabled=st.session_state.txt2txt_running,
+    disabled=st.session_state.running,
 )
 
 if service == "Huggingface" and HF_TOKEN is None:
@@ -48,7 +46,7 @@ if service == "Huggingface" and HF_TOKEN is None:
         "API Key",
         type="password",
         help="Cleared on page refresh",
-        disabled=st.session_state.txt2txt_running,
+        disabled=st.session_state.running,
         value=st.session_state.api_key_huggingface,
     )
 else:
@@ -59,7 +57,7 @@ if service == "Perplexity" and PERPLEXITY_API_KEY is None:
         "API Key",
         type="password",
         help="Cleared on page refresh",
-        disabled=st.session_state.txt2txt_running,
+        disabled=st.session_state.running,
         value=st.session_state.api_key_perplexity,
     )
 else:
@@ -75,13 +73,13 @@ model = st.sidebar.selectbox(
     "Model",
     options=Config.TXT2TXT_MODELS[service],
     index=Config.TXT2TXT_DEFAULT_MODEL[service],
-    disabled=st.session_state.txt2txt_running,
+    disabled=st.session_state.running,
     format_func=lambda x: x.split("/")[1] if service == "Huggingface" else x,
 )
 system = st.sidebar.text_area(
     "System Message",
     value=Config.TXT2TXT_DEFAULT_SYSTEM,
-    disabled=st.session_state.txt2txt_running,
+    disabled=st.session_state.running,
 )
 
 # build parameters from preset
@@ -91,11 +89,11 @@ for param in preset["parameters"]:
     if param == "max_tokens":
         parameters[param] = st.sidebar.slider(
             "Max Tokens",
-            step=128,
+            step=512,
             value=512,
             min_value=512,
             max_value=4096,
-            disabled=st.session_state.txt2txt_running,
+            disabled=st.session_state.running,
             help="Maximum number of tokens to generate (default: 512)",
         )
     if param == "temperature":
@@ -105,7 +103,7 @@ for param in preset["parameters"]:
             value=1.0,
             min_value=0.0,
             max_value=2.0,
-            disabled=st.session_state.txt2txt_running,
+            disabled=st.session_state.running,
             help="Used to modulate the next token probabilities (default: 1.0)",
         )
     if param == "frequency_penalty":
@@ -115,7 +113,7 @@ for param in preset["parameters"]:
             value=preset["frequency_penalty"],
             min_value=preset["frequency_penalty_min"],
             max_value=preset["frequency_penalty_max"],
-            disabled=st.session_state.txt2txt_running,
+            disabled=st.session_state.running,
             help="Penalize new tokens based on their existing frequency in the text (default: 0.0)",
         )
     if param == "seed":
@@ -124,7 +122,7 @@ for param in preset["parameters"]:
             value=-1,
             min_value=-1,
             max_value=(1 << 53) - 1,
-            disabled=st.session_state.txt2txt_running,
+            disabled=st.session_state.running,
             help="Make a best effort to sample deterministically (default: -1)",
         )
 
@@ -181,7 +179,7 @@ else:
 # chat input
 if prompt := st.chat_input(
     "What would you like to know?",
-    on_submit=lambda: setattr(st.session_state, "txt2txt_running", True),
+    on_submit=lambda: setattr(st.session_state, "running", True),
 ):
     st.session_state.txt2txt_prompt = prompt
 
@@ -202,7 +200,7 @@ if prompt := st.chat_input(
     with st.chat_message("assistant"):
         api_key = getattr(st.session_state, f"api_key_{service.lower()}", None)
         response = txt2txt_generate(api_key, service, model, parameters)
-        st.session_state.txt2txt_running = False
+        st.session_state.running = False
 
     st.session_state.txt2txt_messages.append({"role": "user", "content": st.session_state.txt2txt_prompt})
     st.session_state.txt2txt_messages.append({"role": "assistant", "content": response})
