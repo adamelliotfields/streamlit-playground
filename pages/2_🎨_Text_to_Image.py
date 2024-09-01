@@ -5,8 +5,16 @@ import streamlit as st
 
 from lib import Config, ModelPresets, txt2img_generate
 
-HF_TOKEN = os.environ.get("HF_TOKEN") or None
-FAL_KEY = os.environ.get("FAL_KEY") or None
+SERVICE_SESSION = {
+    "Fal": "api_key_fal",
+    "Hugging Face": "api_key_hugging_face",
+}
+
+SESSION_TOKEN = {
+    "api_key_fal": os.environ.get("FAL_KEY") or None,
+    "api_key_hugging_face": os.environ.get("HF_TOKEN") or None,
+}
+
 PRESET_MODEL = {
     "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV,
     "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL,
@@ -28,14 +36,14 @@ st.set_page_config(
 if "api_key_fal" not in st.session_state:
     st.session_state.api_key_fal = ""
 
-if "api_key_huggingface" not in st.session_state:
-    st.session_state.api_key_huggingface = ""
-
-if "txt2img_messages" not in st.session_state:
-    st.session_state.txt2img_messages = []
+if "api_key_hugging_face" not in st.session_state:
+    st.session_state.api_key_hugging_face = ""
 
 if "running" not in st.session_state:
     st.session_state.running = False
+
+if "txt2img_messages" not in st.session_state:
+    st.session_state.txt2img_messages = []
 
 if "txt2img_seed" not in st.session_state:
     st.session_state.txt2img_seed = 0
@@ -45,38 +53,21 @@ st.logo("logo.svg")
 st.sidebar.header("Settings")
 service = st.sidebar.selectbox(
     "Service",
-    options=["Fal", "Huggingface"],
+    options=list(SERVICE_SESSION.keys()),
     index=1,
     disabled=st.session_state.running,
 )
 
-if service == "Huggingface" and HF_TOKEN is None:
-    st.session_state.api_key_huggingface = st.sidebar.text_input(
-        "API Key",
-        type="password",
-        help="Cleared on page refresh",
-        value=st.session_state.api_key_huggingface,
-        disabled=st.session_state.running,
-    )
-else:
-    st.session_state.api_key_huggingface = st.session_state.api_key_huggingface
-
-if service == "Fal" and FAL_KEY is None:
-    st.session_state.api_key_fal = st.sidebar.text_input(
-        "API Key",
-        type="password",
-        help="Cleared on page refresh",
-        value=st.session_state.api_key_fal,
-        disabled=st.session_state.running,
-    )
-else:
-    st.session_state.api_key_fal = st.session_state.api_key_fal
-
-if service == "Huggingface" and HF_TOKEN is not None:
-    st.session_state.api_key_huggingface = HF_TOKEN
-
-if service == "Fal" and FAL_KEY is not None:
-    st.session_state.api_key_fal = FAL_KEY
+# disable API key input and hide value if set by environment variable (handle empty string value later)
+for display_name, session_key in SERVICE_SESSION.items():
+    if service == display_name:
+        st.session_state[session_key] = st.sidebar.text_input(
+            "API Key",
+            type="password",
+            value="" if SESSION_TOKEN[session_key] else st.session_state[session_key],
+            disabled=bool(SESSION_TOKEN[session_key]) or st.session_state.running,
+            help="Set by environment variable" if SESSION_TOKEN[session_key] else "Cleared on page refresh",
+        )
 
 model = st.sidebar.selectbox(
     "Model",
@@ -227,7 +218,6 @@ if st.session_state.txt2img_messages:
         </style>
         """)
 
-        # retry
         col1, col2 = st.columns(2)
         with col1:
             if (
@@ -268,7 +258,8 @@ if prompt := st.chat_input(
         with st.spinner("Running..."):
             if preset.get("kwargs") is not None:
                 parameters.update(preset["kwargs"])
-            api_key = getattr(st.session_state, f"api_key_{service.lower()}", None)
+            session_key = f"api_key_{service.lower().replace(' ', '_')}"
+            api_key = st.session_state[session_key] or SESSION_TOKEN[session_key]
             image = txt2img_generate(api_key, service, model, prompt, parameters)
         st.session_state.running = False
 

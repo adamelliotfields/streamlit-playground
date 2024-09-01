@@ -2,14 +2,14 @@ from types import SimpleNamespace
 
 # txt2txt services
 ServicePresets = SimpleNamespace(
-    Huggingface={
+    HUGGING_FACE={
         # every service has model and system messages
         "frequency_penalty": 0.0,
         "frequency_penalty_min": -2.0,
         "frequency_penalty_max": 2.0,
         "parameters": ["max_tokens", "temperature", "frequency_penalty", "seed"],
     },
-    Perplexity={
+    PERPLEXITY={
         "frequency_penalty": 1.0,
         "frequency_penalty_min": 1.0,
         "frequency_penalty_max": 2.0,

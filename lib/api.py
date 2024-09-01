@@ -11,7 +11,7 @@ from .config import Config
 
 def txt2txt_generate(api_key, service, model, parameters, **kwargs):
     base_url = Config.SERVICES[service]
-    if service == "Huggingface":
+    if service == "Hugging Face":
         base_url = f"{base_url}/{model}/v1"
     client = OpenAI(api_key=api_key, base_url=base_url)
 
@@ -19,14 +19,15 @@ def txt2txt_generate(api_key, service, model, parameters, **kwargs):
         stream = client.chat.completions.create(stream=True, model=model, **parameters, **kwargs)
         return st.write_stream(stream)
     except APIError as e:
-        return e.message
+        # OpenAI uses this message for streaming errors and attaches response.error to error.body
+        return e.body if e.message == "An error occurred during streaming" else e.message
     except Exception as e:
         return str(e)
 
 
 def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
     headers = {}
-    if service == "Huggingface":
+    if service == "Hugging Face":
         headers["Authorization"] = f"Bearer {api_key}"
         headers["X-Wait-For-Model"] = "true"
         headers["X-Use-Cache"] = "false"
@@ -34,7 +35,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
         headers["Authorization"] = f"Key {api_key}"
 
     json = {}
-    if service == "Huggingface":
+    if service == "Hugging Face":
         json = {
             "inputs": inputs,
             "parameters": {**parameters, **kwargs},
@@ -48,7 +49,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
     try:
         response = requests.post(base_url, headers=headers, json=json)
         if response.status_code // 100 == 2:  # 2xx
-            if service == "Huggingface":
+            if service == "Hugging Face":
                 return Image.open(io.BytesIO(response.content))
             if service == "Fal":
                 bytes = base64.b64decode(response.json()["images"][0]["url"].split(",")[-1])
