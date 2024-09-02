@@ -24,11 +24,11 @@ ModelPresets = SimpleNamespace(
         "guidance_scale": 3.5,
         "guidance_scale_min": 1.0,
         "guidance_scale_max": 10.0,
-        "num_inference_steps": 50,
+        "num_inference_steps": 28,
         "num_inference_steps_min": 10,
         "num_inference_steps_max": 50,
-        "parameters": ["seed", "guidance_scale", "num_inference_steps", "expand_prompt"],
-        "kwargs": {"num_images": 1},
+        "parameters": ["seed", "num_inference_steps", "guidance_scale", "expand_prompt"],
+        "kwargs": {"num_images": 1, "sync_mode": False},
     },
     FLUX_DEV={
         "name": "FLUX.1 Dev",
@@ -50,7 +50,7 @@ ModelPresets = SimpleNamespace(
         "guidance_scale_min": 1.0,
         "guidance_scale_max": 10.0,
         "parameters": ["seed", "image_size", "num_inference_steps", "guidance_scale"],
-        "kwargs": {"num_images": 1, "sync_mode": True, "safety_tolerance": 6},
+        "kwargs": {"num_images": 1, "sync_mode": False, "safety_tolerance": 6},
     },
     FLUX_SCHNELL={
         "name": "FLUX.1 Schnell",

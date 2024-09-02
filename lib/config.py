@@ -9,6 +9,7 @@ Config = SimpleNamespace(
         "Perplexity": "https://api.perplexity.ai",
         "Fal": "https://fal.run",
     },
+    TXT2IMG_TIMEOUT=120,
     TXT2IMG_HIDDEN_PARAMETERS=[
         # sent to API but not shown in generation parameters accordion
         "enable_safety_checker",
@@ -27,7 +28,7 @@ Config = SimpleNamespace(
     TXT2IMG_DEFAULT_MODEL={
         # index of model in below lists
         "Hugging Face": 2,
-        "Fal": 1,
+        "Fal": 2,
     },
     TXT2IMG_MODELS={
         "Hugging Face": [
@@ -36,9 +37,8 @@ Config = SimpleNamespace(
             "stabilityai/stable-diffusion-xl-base-1.0",
         ],
         "Fal": [
-            # TODO: fix these models
-            # "fal-ai/aura-flow",
-            # "fal-ai/flux-pro",
+            "fal-ai/aura-flow",
+            "fal-ai/flux-pro",
             "fal-ai/fooocus",
             "fal-ai/kolors",
             "fal-ai/pixart-sigma",

@@ -19,6 +19,8 @@ PRESET_MODEL = {
     "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV,
     "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL,
     "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
+    "fal-ai/aura-flow": ModelPresets.AURA_FLOW,
+    "fal-ai/flux-pro": ModelPresets.FLUX_PRO,
     "fal-ai/fooocus": ModelPresets.FOOOCUS,
     "fal-ai/kolors": ModelPresets.KOLORS,
     "fal-ai/pixart-sigma": ModelPresets.PIXART_SIGMA,
@@ -179,14 +181,12 @@ for message in st.session_state.txt2img_messages:
                         div[data-testid="stMarkdownContainer"] p:not(:last-of-type) { margin-bottom: 0 }
                     </style>
                     """)
-                    filtered_parameters = {
-                        k: v
+                    filtered_parameters = [
+                        f"`{k}`: {v}"
                         for k, v in message["parameters"].items()
                         if k not in Config.TXT2IMG_HIDDEN_PARAMETERS
-                    }
-                    md = f"`model`: {message['model']}\n\n"
-                    md += "\n\n".join([f"`{k}`: {v}" for k, v in filtered_parameters.items()])
-                    st.markdown(md)
+                    ]
+                    st.markdown(f"`model`: {message['model']}\n\n" + "\n\n".join(filtered_parameters))
 
             if role == "assistant":
                 # image is full width when _not_ in full-screen mode

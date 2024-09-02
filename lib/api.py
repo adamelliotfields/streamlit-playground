@@ -1,7 +1,7 @@
 import base64
 import io
 
-import requests
+import httpx
 import streamlit as st
 from openai import APIError, OpenAI
 from PIL import Image
@@ -47,13 +47,19 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
     base_url = f"{Config.SERVICES[service]}/{model}"
 
     try:
-        response = requests.post(base_url, headers=headers, json=json)
+        response = httpx.post(base_url, headers=headers, json=json, timeout=Config.TXT2IMG_TIMEOUT)
         if response.status_code // 100 == 2:  # 2xx
             if service == "Hugging Face":
                 return Image.open(io.BytesIO(response.content))
             if service == "Fal":
-                bytes = base64.b64decode(response.json()["images"][0]["url"].split(",")[-1])
-                return Image.open(io.BytesIO(bytes))
+                # sync_mode means wait for image base64 instead of CDN link
+                if parameters.get("sync_mode", True):
+                    bytes = base64.b64decode(response.json()["images"][0]["url"].split(",")[-1])
+                    return Image.open(io.BytesIO(bytes))
+                else:
+                    url = response.json()["images"][0]["url"]
+                    image = httpx.get(url, headers=headers, timeout=Config.TXT2IMG_TIMEOUT)
+                    return Image.open(io.BytesIO(image.content))
         else:
             return f"Error: {response.status_code} {response.text}"
     except Exception as e:
