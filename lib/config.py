@@ -41,7 +41,6 @@ Config = SimpleNamespace(
             "fal-ai/flux-pro",
             "fal-ai/fooocus",
             "fal-ai/kolors",
-            "fal-ai/pixart-sigma",
             "fal-ai/stable-diffusion-v3-medium",
         ],
     },

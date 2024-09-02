@@ -98,23 +98,6 @@ ModelPresets = SimpleNamespace(
             "scheduler": "EulerDiscreteScheduler",
         },
     },
-    PIXART_SIGMA={
-        "name": "PixArt-Σ",
-        "guidance_scale": 4.5,
-        "guidance_scale_min": 1.0,
-        "guidance_scale_max": 10.0,
-        "num_inference_steps": 35,
-        "num_inference_steps_min": 10,
-        "num_inference_steps_max": 50,
-        "parameters": ["seed", "negative_prompt", "image_size", "guidance_scale", "num_inference_steps"],
-        "kwargs": {
-            "num_images": 1,
-            "sync_mode": True,
-            "enable_safety_checker": False,
-            "style": "(No style)",
-            "scheduler": "SA-SOLVER",
-        },
-    },
     STABLE_DIFFUSION_3={
         "name": "SD3",
         "guidance_scale": 5.0,

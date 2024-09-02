@@ -23,7 +23,6 @@ PRESET_MODEL = {
     "fal-ai/flux-pro": ModelPresets.FLUX_PRO,
     "fal-ai/fooocus": ModelPresets.FOOOCUS,
     "fal-ai/kolors": ModelPresets.KOLORS,
-    "fal-ai/pixart-sigma": ModelPresets.PIXART_SIGMA,
     "fal-ai/stable-diffusion-v3-medium": ModelPresets.STABLE_DIFFUSION_3,
 }
 
