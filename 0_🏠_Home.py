@@ -36,7 +36,7 @@ st.html("""
 }
 </style>
 <div style="display: flex; align-items: center; gap: 0.75rem">
-    <h1 style="padding: 0; margin-bottom: 0.5rem">API Inference</h1>
+    <h1>API Inference</h1>
     <span class="pro-badge">PRO</span>
 </div>
 <p>Inference on Huggingface, Perplexity, and Fal ⚡</p>

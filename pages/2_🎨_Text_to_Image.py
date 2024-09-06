@@ -80,7 +80,7 @@ model = st.sidebar.selectbox(
 
 # heading
 st.html("""
-    <h1 style="padding: 0; margin-bottom: 0.5rem">Text to Image</h1>
+    <h1>Text to Image</h1>
     <p>Generate an image from a text prompt.</p>
 """)
 

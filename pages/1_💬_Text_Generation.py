@@ -119,7 +119,7 @@ for param in preset["parameters"]:
 
 # heading
 st.html("""
-    <h1 style="padding: 0; margin-bottom: 0.5rem">Text Generation</h1>
+    <h1>Text Generation</h1>
     <p>Chat with large language models.</p>
 """)
 
