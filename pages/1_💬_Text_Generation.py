@@ -39,7 +39,7 @@ if "txt2txt_seed" not in st.session_state:
     st.session_state.txt2txt_seed = 0
 
 # sidebar
-st.logo("logo.svg")
+st.logo("logo.png")
 st.sidebar.header("Settings")
 service = st.sidebar.selectbox(
     "Service",

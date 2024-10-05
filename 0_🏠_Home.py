@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 # sidebar
-st.logo("logo.svg")
+st.logo("logo.png")
 
 # title
 st.html("""
@@ -39,10 +39,25 @@ st.html("""
     <h1>API Inference</h1>
     <span class="pro-badge">PRO</span>
 </div>
-<p>Inference on Huggingface, Perplexity, and Fal ⚡</p>
 """)
 
-# content
 st.markdown("## Tasks")
 st.page_link("pages/1_💬_Text_Generation.py", label="Text Generation", icon="💬")
 st.page_link("pages/2_🎨_Text_to_Image.py", label="Text to Image", icon="🎨")
+
+st.markdown("""
+## Services
+
+- [Black Forest Labs](https://docs.bfl.ml)
+- [fal](https://fal.ai/docs)
+- [Hugging Face](https://huggingface.co/docs/api-inference/index)
+- [Perplexity](https://docs.perplexity.ai/home)
+""")
+
+st.markdown("""
+## Usage
+
+Choose a task from the sidebar. Enter your API key for the service you want to use. Refresh your browser to remove it.
+
+I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/api-inference?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/api-inference/blob/main/README.md).
+""")
