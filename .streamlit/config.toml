@@ -1,7 +1,7 @@
 [logger]
 # Level of logging: 'error', 'warning', 'info', or 'debug'.
 # Default: 'info'
-level = "warning"
+level = "info"
 
 [client]
 # Controls whether uncaught app exceptions and deprecation warnings are displayed in the browser.
@@ -11,7 +11,7 @@ level = "warning"
 # with a generic error message. For now, the exception type and traceback show in the browser also,
 # but they will be removed in the future.
 # Default: true
-showErrorDetails = true
+showErrorDetails = false
 
 # Change the visibility of items in the toolbar, options menu, and settings dialog (top right of
 # the app). Allowed values:
@@ -20,7 +20,7 @@ showErrorDetails = true
 # * "viewer" : Hide the developer options.
 # * "minimal" : Show only options set externally (e.g. through Streamlit Community Cloud) or through st.set_page_config. If there are no options left, hide the menu.
 # Default: "auto"
-toolbarMode = "developer"
+toolbarMode = "viewer"
 
 [runner]
 # Allows you to type a variable or string by itself in a single line of Python code to write it to the app.
@@ -40,7 +40,7 @@ enforceSerializableSessionState = true
 # * "poll" : Force Streamlit to always use polling.
 # * "none" : Streamlit will not watch files.
 # Default: "auto"
-fileWatcherType = "watchdog"
+fileWatcherType = "auto"
 
 # If false, will attempt to open a browser window on start.
 # Default: false unless (1) we are on a Linux box where DISPLAY is unset, or (2) we are running in the Streamlit Atom plugin.
