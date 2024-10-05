@@ -1,9 +1,9 @@
 from types import SimpleNamespace
 
-# txt2txt services
+# txt2txt
 ServicePresets = SimpleNamespace(
+    # Every service has model and system messages
     HUGGING_FACE={
-        # every service has model and system messages
         "frequency_penalty": 0.0,
         "frequency_penalty_min": -2.0,
         "frequency_penalty_max": 2.0,
@@ -17,7 +17,7 @@ ServicePresets = SimpleNamespace(
     },
 )
 
-# txt2img models
+# txt2img
 ModelPresets = SimpleNamespace(
     AURA_FLOW={
         "name": "AuraFlow",
@@ -30,33 +30,89 @@ ModelPresets = SimpleNamespace(
         "parameters": ["seed", "num_inference_steps", "guidance_scale", "expand_prompt"],
         "kwargs": {"num_images": 1, "sync_mode": False},
     },
-    FLUX_DEV={
+    FLUX_1_1_PRO_BFL={
+        "name": "FLUX1.1 Pro",
+        "parameters": ["seed", "width", "height", "prompt_upsampling"],
+        "kwargs": {"safety_tolerance": 6},
+    },
+    FLUX_PRO_BFL={
+        "name": "FLUX.1 Pro",
+        "guidance_scale": 2.5,
+        "guidance_scale_min": 1.5,
+        "guidance_scale_max": 5.0,
+        "num_inference_steps": 40,
+        "num_inference_steps_min": 10,
+        "num_inference_steps_max": 50,
+        "parameters": ["seed", "width", "height", "steps", "guidance", "prompt_upsampling"],
+        "kwargs": {"safety_tolerance": 6, "interval": 1},
+    },
+    FLUX_DEV_BFL={
         "name": "FLUX.1 Dev",
         "num_inference_steps": 28,
         "num_inference_steps_min": 10,
         "num_inference_steps_max": 50,
-        "guidance_scale": 3.5,
-        "guidance_scale_min": 1.0,
-        "guidance_scale_max": 10.0,
-        "parameters": ["width", "height", "guidance_scale", "num_inference_steps"],
-        "kwargs": {"max_sequence_length": 512},
+        "guidance_scale": 3.0,
+        "guidance_scale_min": 1.5,
+        "guidance_scale_max": 5.0,
+        "parameters": ["seed", "width", "height", "steps", "guidance", "prompt_upsampling"],
+        "kwargs": {"safety_tolerance": 6},
     },
-    FLUX_PRO={
+    FLUX_1_1_PRO_FAL={
+        "name": "FLUX1.1 Pro",
+        "parameters": ["seed", "image_size"],
+        "kwargs": {
+            "num_images": 1,
+            "sync_mode": False,
+            "safety_tolerance": 6,
+            "enable_safety_checker": False,
+        },
+    },
+    FLUX_PRO_FAL={
         "name": "FLUX.1 Pro",
-        "num_inference_steps": 28,
+        "guidance_scale": 2.5,
+        "guidance_scale_min": 1.5,
+        "guidance_scale_max": 5.0,
+        "num_inference_steps": 40,
         "num_inference_steps_min": 10,
         "num_inference_steps_max": 50,
-        "guidance_scale": 3.5,
-        "guidance_scale_min": 1.0,
-        "guidance_scale_max": 10.0,
         "parameters": ["seed", "image_size", "num_inference_steps", "guidance_scale"],
         "kwargs": {"num_images": 1, "sync_mode": False, "safety_tolerance": 6},
     },
-    FLUX_SCHNELL={
+    FLUX_DEV_FAL={
+        "name": "FLUX.1 Dev",
+        "num_inference_steps": 28,
+        "num_inference_steps_min": 10,
+        "num_inference_steps_max": 50,
+        "guidance_scale": 3.0,
+        "guidance_scale_min": 1.5,
+        "guidance_scale_max": 5.0,
+        "parameters": ["seed", "image_size", "num_inference_steps", "guidance_scale"],
+        "kwargs": {"num_images": 1, "sync_mode": False, "safety_tolerance": 6},
+    },
+    FLUX_SCHNELL_FAL={
         "name": "FLUX.1 Schnell",
         "num_inference_steps": 4,
         "num_inference_steps_min": 1,
-        "num_inference_steps_max": 8,
+        "num_inference_steps_max": 12,
+        "parameters": ["seed", "image_size", "num_inference_steps"],
+        "kwargs": {"num_images": 1, "sync_mode": False, "enable_safety_checker": False},
+    },
+    FLUX_DEV_HF={
+        "name": "FLUX.1 Dev",
+        "num_inference_steps": 28,
+        "num_inference_steps_min": 10,
+        "num_inference_steps_max": 50,
+        "guidance_scale": 3.0,
+        "guidance_scale_min": 1.5,
+        "guidance_scale_max": 5.0,
+        "parameters": ["width", "height", "guidance_scale", "num_inference_steps"],
+        "kwargs": {"max_sequence_length": 512},
+    },
+    FLUX_SCHNELL_HF={
+        "name": "FLUX.1 Schnell",
+        "num_inference_steps": 4,
+        "num_inference_steps_min": 1,
+        "num_inference_steps_max": 12,
         "parameters": ["width", "height", "num_inference_steps"],
         "kwargs": {"guidance_scale": 0.0, "max_sequence_length": 256},
     },

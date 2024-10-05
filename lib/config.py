@@ -5,11 +5,12 @@ Config = SimpleNamespace(
     ICON="⚡",
     LAYOUT="wide",
     SERVICES={
+        "BFL": "https://api.bfl.ml/v1",
+        "Fal": "https://fal.run",
         "Hugging Face": "https://api-inference.huggingface.co/models",
         "Perplexity": "https://api.perplexity.ai",
-        "Fal": "https://fal.run",
     },
-    TXT2IMG_TIMEOUT=120,
+    TXT2IMG_TIMEOUT=60,
     TXT2IMG_HIDDEN_PARAMETERS=[
         # sent to API but not shown in generation parameters accordion
         "enable_safety_checker",
@@ -26,22 +27,32 @@ Config = SimpleNamespace(
     ],
     TXT2IMG_NEGATIVE_PROMPT="ugly, unattractive, disfigured, deformed, mutated, malformed, blurry, grainy, noisy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, autograph, trademark, sloppy, cluttered",
     TXT2IMG_DEFAULT_MODEL={
-        # index of model in below lists
+        # The index of model in below lists
+        "BFL": 2,
+        "Fal": 0,
         "Hugging Face": 2,
-        "Fal": 2,
     },
     TXT2IMG_MODELS={
+        # Model IDs referenced in Text_to_Image.py
+        "BFL": [
+            "flux-dev",
+            "flux-pro",
+            "flux-pro-1.1",
+        ],
+        "Fal": [
+            "fal-ai/aura-flow",
+            "fal-ai/flux/dev",
+            "fal-ai/flux/schnell",
+            "fal-ai/flux-pro",
+            "fal-ai/flux-pro/v1.1",
+            "fal-ai/fooocus",
+            "fal-ai/kolors",
+            "fal-ai/stable-diffusion-v3-medium",
+        ],
         "Hugging Face": [
             "black-forest-labs/flux.1-dev",
             "black-forest-labs/flux.1-schnell",
             "stabilityai/stable-diffusion-xl-base-1.0",
-        ],
-        "Fal": [
-            "fal-ai/aura-flow",
-            "fal-ai/flux-pro",
-            "fal-ai/fooocus",
-            "fal-ai/kolors",
-            "fal-ai/stable-diffusion-v3-medium",
         ],
     },
     TXT2IMG_DEFAULT_IMAGE_SIZE="square_hd",  # fal image sizes
@@ -76,7 +87,6 @@ Config = SimpleNamespace(
         "1344x704",  # 21:11
         "1408x704",  # 2:1
     ],
-    # TODO: txt2img fooocus styles like "Fooocus V2" and "Fooocus Enhance" (use multiselect in UI)
     TXT2TXT_DEFAULT_SYSTEM="You are a helpful assistant. Be precise and concise.",
     TXT2TXT_DEFAULT_MODEL={
         "Hugging Face": 4,

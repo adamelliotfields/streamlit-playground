@@ -6,34 +6,45 @@ import streamlit as st
 from lib import Config, ModelPresets, txt2img_generate
 
 SERVICE_SESSION = {
+    "BFL": "api_key_bfl",
     "Fal": "api_key_fal",
     "Hugging Face": "api_key_hugging_face",
 }
 
 SESSION_TOKEN = {
+    "api_key_bfl": os.environ.get("BFL_API_KEY") or None,
     "api_key_fal": os.environ.get("FAL_KEY") or None,
     "api_key_hugging_face": os.environ.get("HF_TOKEN") or None,
 }
 
+# Model IDs in lib/config.py
 PRESET_MODEL = {
-    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV,
-    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL,
+    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV_HF,
+    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL_HF,
     "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
     "fal-ai/aura-flow": ModelPresets.AURA_FLOW,
-    "fal-ai/flux-pro": ModelPresets.FLUX_PRO,
+    "fal-ai/flux/dev": ModelPresets.FLUX_DEV_FAL,
+    "fal-ai/flux/schnell": ModelPresets.FLUX_SCHNELL_FAL,
+    "fal-ai/flux-pro": ModelPresets.FLUX_PRO_FAL,
+    "fal-ai/flux-pro/v1.1": ModelPresets.FLUX_1_1_PRO_FAL,
     "fal-ai/fooocus": ModelPresets.FOOOCUS,
     "fal-ai/kolors": ModelPresets.KOLORS,
     "fal-ai/stable-diffusion-v3-medium": ModelPresets.STABLE_DIFFUSION_3,
+    "flux-pro-1.1": ModelPresets.FLUX_1_1_PRO_BFL,
+    "flux-pro": ModelPresets.FLUX_PRO_BFL,
+    "flux-dev": ModelPresets.FLUX_DEV_BFL,
 }
 
-# config
 st.set_page_config(
     page_title=f"{Config.TITLE} | Text to Image",
     page_icon=Config.ICON,
     layout=Config.LAYOUT,
 )
 
-# initialize state
+# Initialize Streamlit session state
+if "api_key_bfl" not in st.session_state:
+    st.session_state.api_key_bfl = ""
+
 if "api_key_fal" not in st.session_state:
     st.session_state.api_key_fal = ""
 
@@ -49,7 +60,6 @@ if "txt2img_messages" not in st.session_state:
 if "txt2img_seed" not in st.session_state:
     st.session_state.txt2img_seed = 0
 
-# sidebar
 st.logo("logo.svg")
 st.sidebar.header("Settings")
 service = st.sidebar.selectbox(
@@ -59,7 +69,7 @@ service = st.sidebar.selectbox(
     disabled=st.session_state.running,
 )
 
-# disable API key input and hide value if set by environment variable (handle empty string value later)
+# Disable API key input and hide value if set by environment variable; handle empty string value later.
 for display_name, session_key in SERVICE_SESSION.items():
     if service == display_name:
         st.session_state[session_key] = st.sidebar.text_input(
@@ -75,7 +85,6 @@ model = st.sidebar.selectbox(
     options=Config.TXT2IMG_MODELS[service],
     index=Config.TXT2IMG_DEFAULT_MODEL[service],
     disabled=st.session_state.running,
-    format_func=lambda x: x.split("/")[1],
 )
 
 # heading
@@ -84,7 +93,7 @@ st.html("""
     <p>Generate an image from a text prompt.</p>
 """)
 
-# build parameters from preset
+# Build parameters from preset by rendering the appropriate input widgets
 parameters = {}
 preset = PRESET_MODEL[model]
 for param in preset["parameters"]:
@@ -134,7 +143,7 @@ for param in preset["parameters"]:
             value=Config.TXT2IMG_DEFAULT_ASPECT_RATIO,
             disabled=st.session_state.running,
         )
-    if param == "guidance_scale":
+    if param in ["guidance_scale", "guidance"]:
         parameters[param] = st.sidebar.slider(
             "Guidance Scale",
             preset["guidance_scale_min"],
@@ -143,7 +152,7 @@ for param in preset["parameters"]:
             0.1,
             disabled=st.session_state.running,
         )
-    if param == "num_inference_steps":
+    if param in ["num_inference_steps", "steps"]:
         parameters[param] = st.sidebar.slider(
             "Inference Steps",
             preset["num_inference_steps_min"],
@@ -152,20 +161,20 @@ for param in preset["parameters"]:
             1,
             disabled=st.session_state.running,
         )
-    if param == "expand_prompt":
-        parameters[param] = st.sidebar.checkbox(
-            "Expand Prompt",
-            value=False,
-            disabled=st.session_state.running,
-        )
-    if param == "prompt_expansion":
+    if param in ["expand_prompt", "prompt_expansion"]:
         parameters[param] = st.sidebar.checkbox(
             "Prompt Expansion",
             value=False,
             disabled=st.session_state.running,
         )
+    if param == "prompt_upsampling":
+        parameters[param] = st.sidebar.checkbox(
+            "Prompt Upsampling",
+            value=False,
+            disabled=st.session_state.running,
+        )
 
-# wrap the prompt in an expander to display additional parameters
+# Wrap the prompt in an accordion to display additional parameters
 for message in st.session_state.txt2img_messages:
     role = message["role"]
     with st.chat_message(role):
@@ -202,7 +211,7 @@ for message in st.session_state.txt2img_messages:
                 """)
                 st.write(message["content"])  # success will be image, error will be text
 
-# button row
+# Buttons for deleting last generation or clearing all generations
 if st.session_state.txt2img_messages:
     button_container = st.empty()
     with button_container.container():
@@ -235,7 +244,8 @@ if st.session_state.txt2img_messages:
 else:
     button_container = None
 
-# show the prompt and spinner while loading then update state and re-render
+# Set running state to True and show spinner while loading.
+# Update state and refresh on response; errors will be displayed as chat messages.
 if prompt := st.chat_input(
     "What do you want to see?",
     on_submit=lambda: setattr(st.session_state, "running", True),
