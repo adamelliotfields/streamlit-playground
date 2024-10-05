@@ -37,7 +37,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
     if service == "Fal":
         headers["Authorization"] = f"Key {api_key}"
 
-    if service == "BFL":
+    if service == "Black Forest Labs":
         headers["x-key"] = api_key
 
     json = {}
@@ -51,7 +51,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
         json = {**parameters, **kwargs}
         json["prompt"] = inputs
 
-    if service == "BFL":
+    if service == "Black Forest Labs":
         json = {**parameters, **kwargs}
         json["prompt"] = inputs
 
@@ -75,7 +75,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
 
             # BFL is async so we need to poll for result
             # https://api.bfl.ml/docs
-            if service == "BFL":
+            if service == "Black Forest Labs":
                 id = response.json()["id"]
                 url = f"{Config.SERVICES[service]}/get_result?id={id}"
 

@@ -5,7 +5,7 @@ Config = SimpleNamespace(
     ICON="⚡",
     LAYOUT="wide",
     SERVICES={
-        "BFL": "https://api.bfl.ml/v1",
+        "Black Forest Labs": "https://api.bfl.ml/v1",
         "Fal": "https://fal.run",
         "Hugging Face": "https://api-inference.huggingface.co/models",
         "Perplexity": "https://api.perplexity.ai",
@@ -28,13 +28,13 @@ Config = SimpleNamespace(
     TXT2IMG_NEGATIVE_PROMPT="ugly, unattractive, disfigured, deformed, mutated, malformed, blurry, grainy, noisy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, autograph, trademark, sloppy, cluttered",
     TXT2IMG_DEFAULT_MODEL={
         # The index of model in below lists
-        "BFL": 2,
+        "Black Forest Labs": 2,
         "Fal": 0,
         "Hugging Face": 2,
     },
     TXT2IMG_MODELS={
         # Model IDs referenced in Text_to_Image.py
-        "BFL": [
+        "Black Forest Labs": [
             "flux-dev",
             "flux-pro",
             "flux-pro-1.1",

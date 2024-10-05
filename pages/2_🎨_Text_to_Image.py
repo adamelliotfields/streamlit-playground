@@ -5,14 +5,15 @@ import streamlit as st
 
 from lib import Config, ModelPresets, txt2img_generate
 
+# The token name is the service in lower_snake_case
 SERVICE_SESSION = {
-    "BFL": "api_key_bfl",
+    "Black Forest Labs": "api_key_black_forest_labs",
     "Fal": "api_key_fal",
     "Hugging Face": "api_key_hugging_face",
 }
 
 SESSION_TOKEN = {
-    "api_key_bfl": os.environ.get("BFL_API_KEY") or None,
+    "api_key_black_forest_labs": os.environ.get("BFL_API_KEY") or None,
     "api_key_fal": os.environ.get("FAL_KEY") or None,
     "api_key_hugging_face": os.environ.get("HF_TOKEN") or None,
 }
@@ -42,8 +43,8 @@ st.set_page_config(
 )
 
 # Initialize Streamlit session state
-if "api_key_bfl" not in st.session_state:
-    st.session_state.api_key_bfl = ""
+if "api_key_black_forest_labs" not in st.session_state:
+    st.session_state.api_key_black_forest_labs = ""
 
 if "api_key_fal" not in st.session_state:
     st.session_state.api_key_fal = ""
@@ -60,13 +61,13 @@ if "txt2img_messages" not in st.session_state:
 if "txt2img_seed" not in st.session_state:
     st.session_state.txt2img_seed = 0
 
-st.logo("logo.svg")
+st.logo("logo.png")
 st.sidebar.header("Settings")
 service = st.sidebar.selectbox(
     "Service",
     options=list(SERVICE_SESSION.keys()),
-    index=1,
     disabled=st.session_state.running,
+    index=2,  # Hugging Face
 )
 
 # Disable API key input and hide value if set by environment variable; handle empty string value later.
