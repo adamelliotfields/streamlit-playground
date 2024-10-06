@@ -10,19 +10,24 @@ SERVICE_SESSION = {
     "Black Forest Labs": "api_key_black_forest_labs",
     "Fal": "api_key_fal",
     "Hugging Face": "api_key_hugging_face",
+    "Together": "api_key_together",
 }
 
 SESSION_TOKEN = {
     "api_key_black_forest_labs": os.environ.get("BFL_API_KEY") or None,
     "api_key_fal": os.environ.get("FAL_KEY") or None,
     "api_key_hugging_face": os.environ.get("HF_TOKEN") or None,
+    "api_key_together": os.environ.get("TOGETHER_API_KEY") or None,
 }
 
+# TODO: group by service so we can have models with the same name
 # Model IDs in lib/config.py
 PRESET_MODEL = {
-    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV_HF,
-    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL_HF,
-    "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
+    # bfl
+    "flux-pro-1.1": ModelPresets.FLUX_1_1_PRO_BFL,
+    "flux-pro": ModelPresets.FLUX_PRO_BFL,
+    "flux-dev": ModelPresets.FLUX_DEV_BFL,
+    # fal
     "fal-ai/aura-flow": ModelPresets.AURA_FLOW,
     "fal-ai/flux/dev": ModelPresets.FLUX_DEV_FAL,
     "fal-ai/flux/schnell": ModelPresets.FLUX_SCHNELL_FAL,
@@ -31,9 +36,12 @@ PRESET_MODEL = {
     "fal-ai/fooocus": ModelPresets.FOOOCUS,
     "fal-ai/kolors": ModelPresets.KOLORS,
     "fal-ai/stable-diffusion-v3-medium": ModelPresets.STABLE_DIFFUSION_3,
-    "flux-pro-1.1": ModelPresets.FLUX_1_1_PRO_BFL,
-    "flux-pro": ModelPresets.FLUX_PRO_BFL,
-    "flux-dev": ModelPresets.FLUX_DEV_BFL,
+    # hf
+    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV_HF,
+    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL_HF,
+    "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
+    # together
+    "black-forest-labs/FLUX.1-schnell-Free": ModelPresets.FLUX_SCHNELL_FREE_TOGETHER,
 }
 
 st.set_page_config(
@@ -51,6 +59,9 @@ if "api_key_fal" not in st.session_state:
 
 if "api_key_hugging_face" not in st.session_state:
     st.session_state.api_key_hugging_face = ""
+
+if "api_key_together" not in st.session_state:
+    st.session_state.api_key_together = ""
 
 if "running" not in st.session_state:
     st.session_state.running = False
@@ -98,6 +109,8 @@ st.html("""
 parameters = {}
 preset = PRESET_MODEL[model]
 for param in preset["parameters"]:
+    if param == "model":
+        parameters[param] = model
     if param == "seed":
         parameters[param] = st.sidebar.number_input(
             "Seed",

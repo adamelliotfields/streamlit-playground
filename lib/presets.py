@@ -116,6 +116,14 @@ ModelPresets = SimpleNamespace(
         "parameters": ["width", "height", "num_inference_steps"],
         "kwargs": {"guidance_scale": 0.0, "max_sequence_length": 256},
     },
+    FLUX_SCHNELL_FREE_TOGETHER={
+        "name": "FLUX.1 Schnell Free",
+        "num_inference_steps": 4,
+        "num_inference_steps_min": 1,
+        "num_inference_steps_max": 12,
+        "parameters": ["model", "seed", "width", "height", "steps"],
+        "kwargs": {"n": 1},
+    },
     FOOOCUS={
         "name": "Fooocus",
         "guidance_scale": 4.0,

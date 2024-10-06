@@ -29,50 +29,47 @@ def txt2txt_generate(api_key, service, model, parameters, **kwargs):
 
 def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
     headers = {}
+    if service == "Black Forest Labs":
+        headers["x-key"] = api_key
+
+    if service == "Fal":
+        headers["Authorization"] = f"Key {api_key}"
+
     if service == "Hugging Face":
         headers["Authorization"] = f"Bearer {api_key}"
         headers["X-Wait-For-Model"] = "true"
         headers["X-Use-Cache"] = "false"
 
-    if service == "Fal":
-        headers["Authorization"] = f"Key {api_key}"
-
-    if service == "Black Forest Labs":
-        headers["x-key"] = api_key
+    if service == "Together":
+        headers["Authorization"] = f"Bearer {api_key}"
 
     json = {}
+    if service == "Black Forest Labs":
+        json = {**parameters, **kwargs}
+        json["prompt"] = inputs
+
+    if service == "Fal":
+        json = {**parameters, **kwargs}
+        json["prompt"] = inputs
+
     if service == "Hugging Face":
         json = {
             "inputs": inputs,
             "parameters": {**parameters, **kwargs},
         }
 
-    if service == "Fal":
+    if service == "Together":
         json = {**parameters, **kwargs}
         json["prompt"] = inputs
 
-    if service == "Black Forest Labs":
-        json = {**parameters, **kwargs}
-        json["prompt"] = inputs
+    base_url = Config.SERVICES[service]
 
-    base_url = f"{Config.SERVICES[service]}/{model}"
+    if service not in ["Together"]:
+        base_url = f"{base_url}/{model}"
 
     try:
         response = httpx.post(base_url, headers=headers, json=json, timeout=Config.TXT2IMG_TIMEOUT)
         if response.status_code // 100 == 2:  # 2xx
-            if service == "Hugging Face":
-                return Image.open(io.BytesIO(response.content))
-
-            if service == "Fal":
-                # Sync mode means wait for image base64 string instead of CDN link
-                if parameters.get("sync_mode", True):
-                    bytes = base64.b64decode(response.json()["images"][0]["url"].split(",")[-1])
-                    return Image.open(io.BytesIO(bytes))
-                else:
-                    url = response.json()["images"][0]["url"]
-                    image = httpx.get(url, headers=headers, timeout=Config.TXT2IMG_TIMEOUT)
-                    return Image.open(io.BytesIO(image.content))
-
             # BFL is async so we need to poll for result
             # https://api.bfl.ml/docs
             if service == "Black Forest Labs":
@@ -97,6 +94,24 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
                     time.sleep(1)
 
                 return "Error: API timeout"
+
+            if service == "Fal":
+                # Sync mode means wait for image base64 string instead of CDN link
+                if parameters.get("sync_mode", True):
+                    bytes = base64.b64decode(response.json()["images"][0]["url"].split(",")[-1])
+                    return Image.open(io.BytesIO(bytes))
+                else:
+                    url = response.json()["images"][0]["url"]
+                    image = httpx.get(url, headers=headers, timeout=Config.TXT2IMG_TIMEOUT)
+                    return Image.open(io.BytesIO(image.content))
+
+            if service == "Hugging Face":
+                return Image.open(io.BytesIO(response.content))
+
+            if service == "Together":
+                url = response.json()["data"][0]["url"]
+                image = httpx.get(url, headers=headers, timeout=Config.TXT2IMG_TIMEOUT)
+                return Image.open(io.BytesIO(image.content))
 
         else:
             return f"Error: {response.status_code} {response.text}"

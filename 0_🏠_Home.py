@@ -49,9 +49,10 @@ st.markdown("""
 ## Services
 
 - [Black Forest Labs](https://docs.bfl.ml)
-- [fal](https://fal.ai/docs)
+- [fal.ai](https://fal.ai/docs)
 - [Hugging Face](https://huggingface.co/docs/api-inference/index)
 - [Perplexity](https://docs.perplexity.ai/home)
+- [together.ai](https://docs.together.ai/docs/introduction)
 """)
 
 st.markdown("""

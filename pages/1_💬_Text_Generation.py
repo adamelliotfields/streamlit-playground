@@ -12,7 +12,7 @@ SERVICE_SESSION = {
 
 SESSION_TOKEN = {
     "api_key_hugging_face": os.environ.get("HF_TOKEN") or None,
-    "api_key_perplexity": os.environ.get("PERPLEXITY_API_KEY") or None,
+    "api_key_perplexity": os.environ.get("PPLX_API_KEY") or None,
 }
 
 # config

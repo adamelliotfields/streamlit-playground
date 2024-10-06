@@ -9,6 +9,7 @@ Config = SimpleNamespace(
         "Fal": "https://fal.run",
         "Hugging Face": "https://api-inference.huggingface.co/models",
         "Perplexity": "https://api.perplexity.ai",
+        "Together": "https://api.together.xyz/v1/images/generations",
     },
     TXT2IMG_TIMEOUT=60,
     TXT2IMG_HIDDEN_PARAMETERS=[
@@ -31,6 +32,7 @@ Config = SimpleNamespace(
         "Black Forest Labs": 2,
         "Fal": 0,
         "Hugging Face": 2,
+        "Together": 0,
     },
     TXT2IMG_MODELS={
         # Model IDs referenced in Text_to_Image.py
@@ -53,6 +55,9 @@ Config = SimpleNamespace(
             "black-forest-labs/flux.1-dev",
             "black-forest-labs/flux.1-schnell",
             "stabilityai/stable-diffusion-xl-base-1.0",
+        ],
+        "Together": [
+            "black-forest-labs/FLUX.1-schnell-Free",
         ],
     },
     TXT2IMG_DEFAULT_IMAGE_SIZE="square_hd",  # fal image sizes
