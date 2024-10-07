@@ -3,7 +3,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import ServicePresets, config, txt2txt_generate
+from lib import config, preset, txt2txt_generate
 
 SERVICE_SESSION = {
     "Hugging Face": "api_key_hugging_face",
@@ -74,9 +74,9 @@ system = st.sidebar.text_area(
 
 # build parameters from preset
 parameters = {}
-service_key = service.upper().replace(" ", "_")
-preset = getattr(ServicePresets, service_key, {})
-for param in preset["parameters"]:
+service_key = service.lower().replace(" ", "_")
+service_preset = getattr(preset.txt2txt, service_key)
+for param in service_preset.parameters:
     if param == "max_tokens":
         parameters[param] = st.sidebar.slider(
             "Max Tokens",
@@ -101,9 +101,9 @@ for param in preset["parameters"]:
         parameters[param] = st.sidebar.slider(
             "Frequency Penalty",
             step=0.1,
-            value=preset["frequency_penalty"],
-            min_value=preset["frequency_penalty_min"],
-            max_value=preset["frequency_penalty_max"],
+            value=service_preset.frequency_penalty,
+            min_value=service_preset.frequency_penalty_min,
+            max_value=service_preset.frequency_penalty_max,
             disabled=st.session_state.running,
             help="Penalize new tokens based on their existing frequency in the text (default: 0.0)",
         )

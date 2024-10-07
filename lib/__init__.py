@@ -1,11 +1,10 @@
 from .api import txt2img_generate, txt2txt_generate
 from .config import config
-from .presets import ModelPresets, ServicePresets
+from .preset import preset
 
 __all__ = [
     "config",
-    "ModelPresets",
-    "ServicePresets",
+    "preset",
     "txt2img_generate",
     "txt2txt_generate",
 ]

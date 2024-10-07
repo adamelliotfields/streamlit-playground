@@ -3,7 +3,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import ModelPresets, config, txt2img_generate
+from lib import config, preset, txt2img_generate
 
 # The token name is the service in lower_snake_case
 SERVICE_SESSION = {
@@ -24,24 +24,24 @@ SESSION_TOKEN = {
 # Model IDs in lib/config.py
 PRESET_MODEL = {
     # bfl
-    "flux-pro-1.1": ModelPresets.FLUX_1_1_PRO_BFL,
-    "flux-pro": ModelPresets.FLUX_PRO_BFL,
-    "flux-dev": ModelPresets.FLUX_DEV_BFL,
+    "flux-pro-1.1": preset.txt2img.flux_1_1_pro_bfl,
+    "flux-pro": preset.txt2img.flux_pro_bfl,
+    "flux-dev": preset.txt2img.flux_dev_bfl,
     # fal
-    "fal-ai/aura-flow": ModelPresets.AURA_FLOW,
-    "fal-ai/flux/dev": ModelPresets.FLUX_DEV_FAL,
-    "fal-ai/flux/schnell": ModelPresets.FLUX_SCHNELL_FAL,
-    "fal-ai/flux-pro": ModelPresets.FLUX_PRO_FAL,
-    "fal-ai/flux-pro/v1.1": ModelPresets.FLUX_1_1_PRO_FAL,
-    "fal-ai/fooocus": ModelPresets.FOOOCUS,
-    "fal-ai/kolors": ModelPresets.KOLORS,
-    "fal-ai/stable-diffusion-v3-medium": ModelPresets.STABLE_DIFFUSION_3,
+    "fal-ai/aura-flow": preset.txt2img.aura_flow,
+    "fal-ai/flux/dev": preset.txt2img.flux_dev_fal,
+    "fal-ai/flux/schnell": preset.txt2img.flux_schnell_fal,
+    "fal-ai/flux-pro": preset.txt2img.flux_pro_fal,
+    "fal-ai/flux-pro/v1.1": preset.txt2img.flux_1_1_pro_fal,
+    "fal-ai/fooocus": preset.txt2img.fooocus,
+    "fal-ai/kolors": preset.txt2img.kolors,
+    "fal-ai/stable-diffusion-v3-medium": preset.txt2img.stable_diffusion_3,
     # hf
-    "black-forest-labs/flux.1-dev": ModelPresets.FLUX_DEV_HF,
-    "black-forest-labs/flux.1-schnell": ModelPresets.FLUX_SCHNELL_HF,
-    "stabilityai/stable-diffusion-xl-base-1.0": ModelPresets.STABLE_DIFFUSION_XL,
+    "black-forest-labs/flux.1-dev": preset.txt2img.flux_dev_hf,
+    "black-forest-labs/flux.1-schnell": preset.txt2img.flux_schnell_hf,
+    "stabilityai/stable-diffusion-xl-base-1.0": preset.txt2img.stable_diffusion_xl,
     # together
-    "black-forest-labs/FLUX.1-schnell-Free": ModelPresets.FLUX_SCHNELL_FREE_TOGETHER,
+    "black-forest-labs/FLUX.1-schnell-Free": preset.txt2img.flux_schnell_free_together,
 }
 
 st.set_page_config(
@@ -81,7 +81,8 @@ service = st.sidebar.selectbox(
     index=2,  # Hugging Face
 )
 
-# Disable API key input and hide value if set by environment variable; handle empty string value later.
+# Show the API key input for the selected service.
+# Disable and hide value if set by environment variable; handle empty string value later.
 for display_name, session_key in SERVICE_SESSION.items():
     if service == display_name:
         st.session_state[session_key] = st.sidebar.text_input(
@@ -108,7 +109,7 @@ st.html("""
 # Build parameters from preset by rendering the appropriate input widgets
 parameters = {}
 preset = PRESET_MODEL[model]
-for param in preset["parameters"]:
+for param in preset.parameters:
     if param == "model":
         parameters[param] = model
     if param == "seed":
@@ -160,18 +161,18 @@ for param in preset["parameters"]:
     if param in ["guidance_scale", "guidance"]:
         parameters[param] = st.sidebar.slider(
             "Guidance Scale",
-            preset["guidance_scale_min"],
-            preset["guidance_scale_max"],
-            preset["guidance_scale"],
+            preset.guidance_scale_min,
+            preset.guidance_scale_max,
+            preset.guidance_scale,
             0.1,
             disabled=st.session_state.running,
         )
     if param in ["num_inference_steps", "steps"]:
         parameters[param] = st.sidebar.slider(
             "Inference Steps",
-            preset["num_inference_steps_min"],
-            preset["num_inference_steps_max"],
-            preset["num_inference_steps"],
+            preset.num_inference_steps_min,
+            preset.num_inference_steps_max,
+            preset.num_inference_steps,
             1,
             disabled=st.session_state.running,
         )
@@ -279,16 +280,15 @@ if prompt := st.chat_input(
 
     with st.chat_message("assistant"):
         with st.spinner("Running..."):
-            if preset.get("kwargs") is not None:
-                parameters.update(preset["kwargs"])
+            if preset.kwargs:
+                parameters.update(preset.kwargs)
             session_key = f"api_key_{service.lower().replace(' ', '_')}"
             api_key = st.session_state[session_key] or SESSION_TOKEN[session_key]
             image = txt2img_generate(api_key, service, model, prompt, parameters)
         st.session_state.running = False
 
-    model_name = PRESET_MODEL[model]["name"]
     st.session_state.txt2img_messages.append(
-        {"role": "user", "content": prompt, "parameters": parameters, "model": model_name}
+        {"role": "user", "content": prompt, "parameters": parameters, "model": PRESET_MODEL[model].name}
     )
     st.session_state.txt2img_messages.append({"role": "assistant", "content": image})
     st.rerun()
