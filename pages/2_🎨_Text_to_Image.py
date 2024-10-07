@@ -3,7 +3,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import Config, ModelPresets, txt2img_generate
+from lib import ModelPresets, config, txt2img_generate
 
 # The token name is the service in lower_snake_case
 SERVICE_SESSION = {
@@ -45,9 +45,9 @@ PRESET_MODEL = {
 }
 
 st.set_page_config(
-    page_title=f"{Config.TITLE} | Text to Image",
-    page_icon=Config.ICON,
-    layout=Config.LAYOUT,
+    page_title=f"{config.title} | Text to Image",
+    page_icon=config.icon,
+    layout=config.layout,
 )
 
 # Initialize Streamlit session state
@@ -94,8 +94,8 @@ for display_name, session_key in SERVICE_SESSION.items():
 
 model = st.sidebar.selectbox(
     "Model",
-    options=Config.TXT2IMG_MODELS[service],
-    index=Config.TXT2IMG_DEFAULT_MODEL[service],
+    options=config.txt2img.models[service],
+    index=config.txt2img.default_model[service],
     disabled=st.session_state.running,
 )
 
@@ -122,7 +122,7 @@ for param in preset["parameters"]:
     if param == "negative_prompt":
         parameters[param] = st.sidebar.text_area(
             "Negative Prompt",
-            value=Config.TXT2IMG_NEGATIVE_PROMPT,
+            value=config.txt2img.negative_prompt,
             disabled=st.session_state.running,
         )
     if param == "width":
@@ -146,15 +146,15 @@ for param in preset["parameters"]:
     if param == "image_size":
         parameters[param] = st.sidebar.select_slider(
             "Image Size",
-            options=Config.TXT2IMG_IMAGE_SIZES,
-            value=Config.TXT2IMG_DEFAULT_IMAGE_SIZE,
+            options=config.txt2img.image_sizes,
+            value=config.txt2img.default_image_size,
             disabled=st.session_state.running,
         )
     if param == "aspect_ratio":
         parameters[param] = st.sidebar.select_slider(
             "Aspect Ratio",
-            options=Config.TXT2IMG_ASPECT_RATIOS,
-            value=Config.TXT2IMG_DEFAULT_ASPECT_RATIO,
+            options=config.txt2img.aspect_ratios,
+            value=config.txt2img.default_aspect_ratio,
             disabled=st.session_state.running,
         )
     if param in ["guidance_scale", "guidance"]:
@@ -206,7 +206,7 @@ for message in st.session_state.txt2img_messages:
                     filtered_parameters = [
                         f"`{k}`: {v}"
                         for k, v in message["parameters"].items()
-                        if k not in Config.TXT2IMG_HIDDEN_PARAMETERS
+                        if k not in config.txt2img.hidden_parameters
                     ]
                     st.markdown(f"`model`: {message['model']}\n\n" + "\n\n".join(filtered_parameters))
 

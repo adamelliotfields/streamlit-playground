@@ -1,11 +1,11 @@
 import streamlit as st
 
-from lib import Config
+from lib import config
 
 st.set_page_config(
-    page_title=Config.TITLE,
-    page_icon=Config.ICON,
-    layout=Config.LAYOUT,
+    page_title=config.title,
+    page_icon=config.icon,
+    layout=config.layout,
 )
 
 # sidebar

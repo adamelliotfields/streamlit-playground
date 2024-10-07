@@ -3,7 +3,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import Config, ServicePresets, txt2txt_generate
+from lib import ServicePresets, config, txt2txt_generate
 
 SERVICE_SESSION = {
     "Hugging Face": "api_key_hugging_face",
@@ -17,9 +17,9 @@ SESSION_TOKEN = {
 
 # config
 st.set_page_config(
-    page_title=f"{Config.TITLE} | Text Generation",
-    page_icon=Config.ICON,
-    layout=Config.LAYOUT,
+    page_title=f"{config.title} | Text Generation",
+    page_icon=config.icon,
+    layout=config.layout,
 )
 
 # initialize state
@@ -61,14 +61,14 @@ for display_name, session_key in SERVICE_SESSION.items():
 
 model = st.sidebar.selectbox(
     "Model",
-    options=Config.TXT2TXT_MODELS[service],
-    index=Config.TXT2TXT_DEFAULT_MODEL[service],
+    options=config.txt2txt.models[service],
+    index=config.txt2txt.default_model[service],
     disabled=st.session_state.running,
     format_func=lambda x: x.split("/")[1] if service == "Hugging Face" else x,
 )
 system = st.sidebar.text_area(
     "System Message",
-    value=Config.TXT2TXT_DEFAULT_SYSTEM,
+    value=config.txt2txt.default_system,
     disabled=st.session_state.running,
 )
 
