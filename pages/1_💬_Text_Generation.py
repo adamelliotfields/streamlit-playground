@@ -43,7 +43,7 @@ st.logo("logo.png")
 st.sidebar.header("Settings")
 service = st.sidebar.selectbox(
     "Service",
-    options=["Hugging Face", "Perplexity"],
+    options=SERVICE_SESSION.keys(),
     index=0,
     disabled=st.session_state.running,
 )

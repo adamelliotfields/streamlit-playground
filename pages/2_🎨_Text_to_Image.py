@@ -20,29 +20,9 @@ SESSION_TOKEN = {
     "api_key_together": os.environ.get("TOGETHER_API_KEY") or None,
 }
 
-# TODO: group by service so we can have models with the same name
-# Model IDs in lib/config.py
-PRESET_MODEL = {
-    # bfl
-    "flux-pro-1.1": preset.txt2img.flux_1_1_pro_bfl,
-    "flux-pro": preset.txt2img.flux_pro_bfl,
-    "flux-dev": preset.txt2img.flux_dev_bfl,
-    # fal
-    "fal-ai/aura-flow": preset.txt2img.aura_flow,
-    "fal-ai/flux/dev": preset.txt2img.flux_dev_fal,
-    "fal-ai/flux/schnell": preset.txt2img.flux_schnell_fal,
-    "fal-ai/flux-pro": preset.txt2img.flux_pro_fal,
-    "fal-ai/flux-pro/v1.1": preset.txt2img.flux_1_1_pro_fal,
-    "fal-ai/fooocus": preset.txt2img.fooocus,
-    "fal-ai/kolors": preset.txt2img.kolors,
-    "fal-ai/stable-diffusion-v3-medium": preset.txt2img.stable_diffusion_3,
-    # hf
-    "black-forest-labs/flux.1-dev": preset.txt2img.flux_dev_hf,
-    "black-forest-labs/flux.1-schnell": preset.txt2img.flux_schnell_hf,
-    "stabilityai/stable-diffusion-xl-base-1.0": preset.txt2img.stable_diffusion_xl,
-    # together
-    "black-forest-labs/FLUX.1-schnell-Free": preset.txt2img.flux_schnell_free_together,
-}
+PRESET_MODEL = {}
+for p in preset.txt2img.presets:
+    PRESET_MODEL[p.model_id] = p
 
 st.set_page_config(
     page_title=f"{config.title} | Text to Image",
@@ -108,8 +88,8 @@ st.html("""
 
 # Build parameters from preset by rendering the appropriate input widgets
 parameters = {}
-preset = PRESET_MODEL[model]
-for param in preset.parameters:
+model_preset = PRESET_MODEL[model]
+for param in model_preset.parameters:
     if param == "model":
         parameters[param] = model
     if param == "seed":
@@ -161,18 +141,18 @@ for param in preset.parameters:
     if param in ["guidance_scale", "guidance"]:
         parameters[param] = st.sidebar.slider(
             "Guidance Scale",
-            preset.guidance_scale_min,
-            preset.guidance_scale_max,
-            preset.guidance_scale,
+            model_preset.guidance_scale_min,
+            model_preset.guidance_scale_max,
+            model_preset.guidance_scale,
             0.1,
             disabled=st.session_state.running,
         )
     if param in ["num_inference_steps", "steps"]:
         parameters[param] = st.sidebar.slider(
             "Inference Steps",
-            preset.num_inference_steps_min,
-            preset.num_inference_steps_max,
-            preset.num_inference_steps,
+            model_preset.num_inference_steps_min,
+            model_preset.num_inference_steps_max,
+            model_preset.num_inference_steps,
             1,
             disabled=st.session_state.running,
         )
@@ -280,8 +260,8 @@ if prompt := st.chat_input(
 
     with st.chat_message("assistant"):
         with st.spinner("Running..."):
-            if preset.kwargs:
-                parameters.update(preset.kwargs)
+            if model_preset.kwargs:
+                parameters.update(model_preset.kwargs)
             session_key = f"api_key_{service.lower().replace(' ', '_')}"
             api_key = st.session_state[session_key] or SESSION_TOKEN[session_key]
             image = txt2img_generate(api_key, service, model, prompt, parameters)

@@ -1,6 +1,19 @@
 from dataclasses import dataclass
 from typing import Dict, List
 
+from .preset import preset
+
+
+def txt2img_models_from_presets(presets):
+    models = {}
+    for p in presets:
+        service = p.service
+        model_id = p.model_id
+        if service not in models:
+            models[service] = []
+        models[service].append(model_id)
+    return models
+
 
 @dataclass
 class Txt2TxtConfig:
@@ -32,6 +45,7 @@ class Config:
     txt2txt: Txt2TxtConfig
 
 
+# TODO: API keys should be with services (make a dataclass)
 config = Config(
     title="API Inference",
     icon="⚡",
@@ -50,34 +64,9 @@ config = Config(
             "Hugging Face": 2,
             "Together": 0,
         },
-        models={
-            # Model identifiers referenced in Text_to_Image.py
-            "Black Forest Labs": [
-                "flux-dev",
-                "flux-pro",
-                "flux-pro-1.1",
-            ],
-            "Fal": [
-                "fal-ai/aura-flow",
-                "fal-ai/flux/dev",
-                "fal-ai/flux/schnell",
-                "fal-ai/flux-pro",
-                "fal-ai/flux-pro/v1.1",
-                "fal-ai/fooocus",
-                "fal-ai/kolors",
-                "fal-ai/stable-diffusion-v3-medium",
-            ],
-            "Hugging Face": [
-                "black-forest-labs/flux.1-dev",
-                "black-forest-labs/flux.1-schnell",
-                "stabilityai/stable-diffusion-xl-base-1.0",
-            ],
-            "Together": [
-                "black-forest-labs/FLUX.1-schnell-Free",
-            ],
-        },
+        models=txt2img_models_from_presets(preset.txt2img.presets),
         hidden_parameters=[
-            # sent to API but not shown in generation parameters accordion
+            # Sent to API but not shown in generation parameters accordion
             "enable_safety_checker",
             "max_sequence_length",
             "num_images",
@@ -90,7 +79,7 @@ config = Config(
             "styles",
             "sync_mode",
         ],
-        negative_prompt="ugly, unattractive, disfigured, deformed, mutated, malformed, blurry, grainy, noisy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, autograph, trademark, sloppy, cluttered",
+        negative_prompt="ugly, unattractive, disfigured, deformed, mutated, malformed, blurry, grainy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, sloppy, cluttered",
         default_image_size="square_hd",
         image_sizes=[
             "landscape_16_9",
@@ -99,7 +88,7 @@ config = Config(
             "portrait_4_3",
             "portrait_16_9",
         ],
-        default_aspect_ratio="1024x1024",
+        default_aspect_ratio="1024x1024",  # fooocus aspect ratios
         aspect_ratios=[
             "704x1408",  # 1:2
             "704x1344",  # 11:21
@@ -143,6 +132,7 @@ config = Config(
                 "llama-3.1-sonar-large-128k-chat",
                 "llama-3.1-sonar-small-128k-online",
                 "llama-3.1-sonar-large-128k-online",
+                "llama-3.1-sonar-huge-128k-online",
             ],
         },
     ),
