@@ -4,12 +4,12 @@ from lib import config
 
 st.set_page_config(
     page_title=config.title,
-    page_icon=config.icon,
+    page_icon=config.logo,
     layout=config.layout,
 )
 
 # sidebar
-st.logo("logo.png")
+st.logo(config.logo)
 
 # title
 st.html("""
@@ -39,6 +39,7 @@ st.html("""
     <h1>API Inference</h1>
     <span class="pro-badge">PRO</span>
 </div>
+<p>Explore popular AI endpoints in one place.</p>
 """)
 
 st.markdown("## Tasks")
@@ -58,7 +59,7 @@ st.markdown("""
 st.markdown("""
 ## Usage
 
-Choose a task from the sidebar. Enter your API key for the service you want to use. Refresh your browser to remove it.
+Choose a task. Select a service. Enter your API key (refresh browser to clear).
 
 I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/api-inference?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/api-inference/blob/main/README.md).
 """)

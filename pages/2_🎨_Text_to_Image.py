@@ -1,44 +1,25 @@
-import os
 from datetime import datetime
+from typing import Dict
 
 import streamlit as st
 
-from lib import config, preset, txt2img_generate
-
-# The token name is the service in lower_snake_case
-SERVICE_SESSION = {
-    "Black Forest Labs": "api_key_black_forest_labs",
-    "Fal": "api_key_fal",
-    "Hugging Face": "api_key_hugging_face",
-    "Together": "api_key_together",
-}
-
-SESSION_TOKEN = {
-    "api_key_black_forest_labs": os.environ.get("BFL_API_KEY") or None,
-    "api_key_fal": os.environ.get("FAL_KEY") or None,
-    "api_key_hugging_face": os.environ.get("HF_TOKEN") or None,
-    "api_key_together": os.environ.get("TOGETHER_API_KEY") or None,
-}
-
-PRESET_MODEL = {}
-for p in preset.txt2img.presets:
-    PRESET_MODEL[p.model_id] = p
+from lib import Txt2ImgPreset, config, preset, txt2img_generate
 
 st.set_page_config(
     page_title=f"{config.title} | Text to Image",
-    page_icon=config.icon,
+    page_icon=config.logo,
     layout=config.layout,
 )
 
 # Initialize Streamlit session state
-if "api_key_black_forest_labs" not in st.session_state:
-    st.session_state.api_key_black_forest_labs = ""
+if "api_key_bfl" not in st.session_state:
+    st.session_state.api_key_bfl = ""
 
 if "api_key_fal" not in st.session_state:
     st.session_state.api_key_fal = ""
 
-if "api_key_hugging_face" not in st.session_state:
-    st.session_state.api_key_hugging_face = ""
+if "api_key_hf" not in st.session_state:
+    st.session_state.api_key_hf = ""
 
 if "api_key_together" not in st.session_state:
     st.session_state.api_key_together = ""
@@ -52,33 +33,41 @@ if "txt2img_messages" not in st.session_state:
 if "txt2img_seed" not in st.session_state:
     st.session_state.txt2img_seed = 0
 
-st.logo("logo.png")
+st.logo(config.logo)
 st.sidebar.header("Settings")
+
 service = st.sidebar.selectbox(
     "Service",
-    options=list(SERVICE_SESSION.keys()),
+    options=preset.txt2img.keys(),
+    format_func=lambda x: config.service[x].name,
     disabled=st.session_state.running,
-    index=2,  # Hugging Face
 )
 
 # Show the API key input for the selected service.
 # Disable and hide value if set by environment variable; handle empty string value later.
-for display_name, session_key in SERVICE_SESSION.items():
-    if service == display_name:
+# for display_name, session_key in SERVICE_SESSION.items():
+for service_id in config.service.keys():
+    if service == service_id:
+        session_key = f"api_key_{service}"
+        api_key = config.service[service].api_key
         st.session_state[session_key] = st.sidebar.text_input(
             "API Key",
             type="password",
-            value="" if SESSION_TOKEN[session_key] else st.session_state[session_key],
-            disabled=bool(SESSION_TOKEN[session_key]) or st.session_state.running,
-            help="Set by environment variable" if SESSION_TOKEN[session_key] else "Cleared on page refresh",
+            value="" if api_key else st.session_state[session_key],
+            disabled=bool(api_key) or st.session_state.running,
+            help="Set by environment variable" if api_key else "Cleared on page refresh",
         )
+
+service_preset: Dict[str, Txt2ImgPreset] = preset.txt2img[service]
 
 model = st.sidebar.selectbox(
     "Model",
-    options=config.txt2img.models[service],
-    index=config.txt2img.default_model[service],
+    options=service_preset.keys(),
+    format_func=lambda x: service_preset[x].name,
     disabled=st.session_state.running,
 )
+
+model_preset = service_preset[model]
 
 # heading
 st.html("""
@@ -88,7 +77,6 @@ st.html("""
 
 # Build parameters from preset by rendering the appropriate input widgets
 parameters = {}
-model_preset = PRESET_MODEL[model]
 for param in model_preset.parameters:
     if param == "model":
         parameters[param] = model
@@ -262,13 +250,13 @@ if prompt := st.chat_input(
         with st.spinner("Running..."):
             if model_preset.kwargs:
                 parameters.update(model_preset.kwargs)
-            session_key = f"api_key_{service.lower().replace(' ', '_')}"
-            api_key = st.session_state[session_key] or SESSION_TOKEN[session_key]
+            session_key = f"api_key_{service}"
+            api_key = st.session_state[session_key] or config.service[service].api_key
             image = txt2img_generate(api_key, service, model, prompt, parameters)
         st.session_state.running = False
 
     st.session_state.txt2img_messages.append(
-        {"role": "user", "content": prompt, "parameters": parameters, "model": PRESET_MODEL[model].name}
+        {"role": "user", "content": prompt, "parameters": parameters, "model": model_preset.name}
     )
     st.session_state.txt2img_messages.append({"role": "assistant", "content": image})
     st.rerun()

@@ -1,33 +1,23 @@
-import os
 from datetime import datetime
+from typing import Dict
 
 import streamlit as st
 
-from lib import config, preset, txt2txt_generate
-
-SERVICE_SESSION = {
-    "Hugging Face": "api_key_hugging_face",
-    "Perplexity": "api_key_perplexity",
-}
-
-SESSION_TOKEN = {
-    "api_key_hugging_face": os.environ.get("HF_TOKEN") or None,
-    "api_key_perplexity": os.environ.get("PPLX_API_KEY") or None,
-}
+from lib import Txt2TxtPreset, config, preset, txt2txt_generate
 
 # config
 st.set_page_config(
     page_title=f"{config.title} | Text Generation",
-    page_icon=config.icon,
+    page_icon=config.logo,
     layout=config.layout,
 )
 
 # initialize state
-if "api_key_hugging_face" not in st.session_state:
-    st.session_state.api_key_hugging_face = ""
+if "api_key_hf" not in st.session_state:
+    st.session_state.api_key_hf = ""
 
-if "api_key_perplexity" not in st.session_state:
-    st.session_state.api_key_perplexity = ""
+if "api_key_pplx" not in st.session_state:
+    st.session_state.api_key_pplx = ""
 
 if "running" not in st.session_state:
     st.session_state.running = False
@@ -39,33 +29,41 @@ if "txt2txt_seed" not in st.session_state:
     st.session_state.txt2txt_seed = 0
 
 # sidebar
-st.logo("logo.png")
+st.logo(config.logo)
 st.sidebar.header("Settings")
+
 service = st.sidebar.selectbox(
     "Service",
-    options=SERVICE_SESSION.keys(),
-    index=0,
+    options=preset.txt2txt.keys(),
+    format_func=lambda x: config.service[x].name,
     disabled=st.session_state.running,
 )
 
 # disable API key input and hide value if set by environment variable (handle empty string value later)
-for display_name, session_key in SERVICE_SESSION.items():
-    if service == display_name:
+# for display_name, session_key in SERVICE_SESSION.items():
+for service_id, service_config in config.service.items():
+    if service == service_id:
+        session_key = f"api_key_{service}"
+        api_key = config.service[service].api_key
         st.session_state[session_key] = st.sidebar.text_input(
             "API Key",
             type="password",
-            value="" if SESSION_TOKEN[session_key] else st.session_state[session_key],
-            disabled=bool(SESSION_TOKEN[session_key]) or st.session_state.running,
-            help="Set by environment variable" if SESSION_TOKEN[session_key] else "Cleared on page refresh",
+            value="" if api_key else st.session_state[session_key],
+            disabled=bool(api_key) or st.session_state.running,
+            help="Set by environment variable" if api_key else "Cleared on page refresh",
         )
+
+service_preset: Dict[str, Txt2TxtPreset] = preset.txt2txt[service]
 
 model = st.sidebar.selectbox(
     "Model",
-    options=config.txt2txt.models[service],
-    index=config.txt2txt.default_model[service],
+    options=service_preset.keys(),
+    format_func=lambda x: service_preset[x].name,
     disabled=st.session_state.running,
-    format_func=lambda x: x.split("/")[1] if service == "Hugging Face" else x,
 )
+
+model_preset = service_preset[model]
+
 system = st.sidebar.text_area(
     "System Message",
     value=config.txt2txt.default_system,
@@ -74,9 +72,7 @@ system = st.sidebar.text_area(
 
 # build parameters from preset
 parameters = {}
-service_key = service.lower().replace(" ", "_")
-service_preset = getattr(preset.txt2txt, service_key)
-for param in service_preset.parameters:
+for param in model_preset.parameters:
     if param == "max_tokens":
         parameters[param] = st.sidebar.slider(
             "Max Tokens",
@@ -101,9 +97,9 @@ for param in service_preset.parameters:
         parameters[param] = st.sidebar.slider(
             "Frequency Penalty",
             step=0.1,
-            value=service_preset.frequency_penalty,
-            min_value=service_preset.frequency_penalty_min,
-            max_value=service_preset.frequency_penalty_max,
+            value=model_preset.frequency_penalty,
+            min_value=model_preset.frequency_penalty_min,
+            max_value=model_preset.frequency_penalty_max,
             disabled=st.session_state.running,
             help="Penalize new tokens based on their existing frequency in the text (default: 0.0)",
         )
@@ -180,8 +176,8 @@ if prompt := st.chat_input(
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        session_key = f"api_key_{service.lower().replace(' ', '_')}"
-        api_key = st.session_state[session_key] or SESSION_TOKEN[session_key]
+        session_key = f"api_key_{service}"
+        api_key = st.session_state[session_key] or config.service[service].api_key
         response = txt2txt_generate(api_key, service, model, parameters)
         st.session_state.running = False
 

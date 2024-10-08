@@ -11,8 +11,8 @@ from .config import config
 
 
 def txt2txt_generate(api_key, service, model, parameters, **kwargs):
-    base_url = config.services[service]
-    if service == "Hugging Face":
+    base_url = config.service[service].url
+    if service == "hf":
         base_url = f"{base_url}/{model}/v1"
     client = OpenAI(api_key=api_key, base_url=base_url)
 
@@ -29,42 +29,32 @@ def txt2txt_generate(api_key, service, model, parameters, **kwargs):
 
 def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
     headers = {}
-    if service == "Black Forest Labs":
+    json = {**parameters, **kwargs}
+
+    if service == "bfl":
         headers["x-key"] = api_key
+        json["prompt"] = inputs
 
-    if service == "Fal":
+    if service == "fal":
         headers["Authorization"] = f"Key {api_key}"
+        json["prompt"] = inputs
 
-    if service == "Hugging Face":
+    if service == "hf":
         headers["Authorization"] = f"Bearer {api_key}"
         headers["X-Wait-For-Model"] = "true"
         headers["X-Use-Cache"] = "false"
-
-    if service == "Together":
-        headers["Authorization"] = f"Bearer {api_key}"
-
-    json = {}
-    if service == "Black Forest Labs":
-        json = {**parameters, **kwargs}
-        json["prompt"] = inputs
-
-    if service == "Fal":
-        json = {**parameters, **kwargs}
-        json["prompt"] = inputs
-
-    if service == "Hugging Face":
         json = {
             "inputs": inputs,
             "parameters": {**parameters, **kwargs},
         }
 
-    if service == "Together":
-        json = {**parameters, **kwargs}
+    if service == "together":
+        headers["Authorization"] = f"Bearer {api_key}"
         json["prompt"] = inputs
 
-    base_url = config.services[service]
+    base_url = config.service[service].url
 
-    if service not in ["Together"]:
+    if service not in ["together"]:
         base_url = f"{base_url}/{model}"
 
     try:
@@ -72,9 +62,9 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
         if response.status_code // 100 == 2:  # 2xx
             # BFL is async so we need to poll for result
             # https://api.bfl.ml/docs
-            if service == "Black Forest Labs":
+            if service == "bfl":
                 id = response.json()["id"]
-                url = f"{config.services[service]}/get_result?id={id}"
+                url = f"{config.service[service].url}/get_result?id={id}"
 
                 retries = 0
                 while retries < config.txt2img.timeout:
@@ -95,7 +85,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
 
                 return "Error: API timeout"
 
-            if service == "Fal":
+            if service == "fal":
                 # Sync mode means wait for image base64 string instead of CDN link
                 if parameters.get("sync_mode", True):
                     bytes = base64.b64decode(response.json()["images"][0]["url"].split(",")[-1])
@@ -105,10 +95,10 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
                     image = httpx.get(url, headers=headers, timeout=config.txt2img.timeout)
                     return Image.open(io.BytesIO(image.content))
 
-            if service == "Hugging Face":
+            if service == "hf":
                 return Image.open(io.BytesIO(response.content))
 
-            if service == "Together":
+            if service == "together":
                 url = response.json()["data"][0]["url"]
                 image = httpx.get(url, headers=headers, timeout=config.txt2img.timeout)
                 return Image.open(io.BytesIO(image.content))

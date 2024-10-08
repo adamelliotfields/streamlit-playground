@@ -1,31 +1,22 @@
+import os
 from dataclasses import dataclass
-from typing import Dict, List
-
-from .preset import preset
+from typing import Dict, List, Optional
 
 
-def txt2img_models_from_presets(presets):
-    models = {}
-    for p in presets:
-        service = p.service
-        model_id = p.model_id
-        if service not in models:
-            models[service] = []
-        models[service].append(model_id)
-    return models
+@dataclass
+class ServiceConfig:
+    name: str
+    url: str
+    api_key: Optional[str] = None
 
 
 @dataclass
 class Txt2TxtConfig:
     default_system: str
-    default_model: Dict[str, int]
-    models: Dict[str, List[str]]
 
 
 @dataclass
 class Txt2ImgConfig:
-    default_model: Dict[str, int]
-    models: Dict[str, List[str]]
     hidden_parameters: List[str]
     negative_prompt: str
     default_image_size: str
@@ -38,37 +29,50 @@ class Txt2ImgConfig:
 @dataclass
 class Config:
     title: str
-    icon: str
     layout: str
-    services: Dict[str, str]
+    logo: str
+    service: Dict[str, ServiceConfig]
     txt2img: Txt2ImgConfig
     txt2txt: Txt2TxtConfig
 
 
-# TODO: API keys should be with services (make a dataclass)
 config = Config(
     title="API Inference",
-    icon="⚡",
     layout="wide",
-    services={
-        "Black Forest Labs": "https://api.bfl.ml/v1",
-        "Fal": "https://fal.run",
-        "Hugging Face": "https://api-inference.huggingface.co/models",
-        "Perplexity": "https://api.perplexity.ai",
-        "Together": "https://api.together.xyz/v1/images/generations",
+    logo="logo.png",
+    service={
+        "bfl": ServiceConfig(
+            "Black Forest Labs",
+            "https://api.bfl.ml/v1",
+            os.environ.get("BFL_API_KEY"),
+        ),
+        "fal": ServiceConfig(
+            "Fal",
+            "https://fal.run",
+            os.environ.get("FAL_KEY"),
+        ),
+        "hf": ServiceConfig(
+            "Hugging Face",
+            "https://api-inference.huggingface.co/models",
+            os.environ.get("HF_TOKEN"),
+        ),
+        "pplx": ServiceConfig(
+            "Perplexity",
+            "https://api.perplexity.ai",
+            os.environ.get("PPLX_API_KEY"),
+        ),
+        "together": ServiceConfig(
+            "Together",
+            "https://api.together.xyz/v1/images/generations",
+            os.environ.get("TOGETHER_API_KEY"),
+        ),
     },
     txt2img=Txt2ImgConfig(
-        default_model={
-            "Black Forest Labs": 2,
-            "Fal": 0,
-            "Hugging Face": 2,
-            "Together": 0,
-        },
-        models=txt2img_models_from_presets(preset.txt2img.presets),
         hidden_parameters=[
             # Sent to API but not shown in generation parameters accordion
             "enable_safety_checker",
             "max_sequence_length",
+            "n",
             "num_images",
             "output_format",
             "performance",
@@ -115,25 +119,5 @@ config = Config(
     ),
     txt2txt=Txt2TxtConfig(
         default_system="You are a helpful assistant. Be precise and concise.",
-        default_model={
-            "Hugging Face": 4,
-            "Perplexity": 3,
-        },
-        models={
-            "Hugging Face": [
-                "codellama/codellama-34b-instruct-hf",
-                "meta-llama/llama-2-13b-chat-hf",
-                "meta-llama/meta-llama-3.1-405b-instruct-fp8",
-                "mistralai/mistral-7b-instruct-v0.2",
-                "nousresearch/nous-hermes-2-mixtral-8x7b-dpo",
-            ],
-            "Perplexity": [
-                "llama-3.1-sonar-small-128k-chat",
-                "llama-3.1-sonar-large-128k-chat",
-                "llama-3.1-sonar-small-128k-online",
-                "llama-3.1-sonar-large-128k-online",
-                "llama-3.1-sonar-huge-128k-online",
-            ],
-        },
     ),
 )
