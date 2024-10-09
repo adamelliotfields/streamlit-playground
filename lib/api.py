@@ -11,7 +11,7 @@ from .config import config
 
 
 def txt2txt_generate(api_key, service, model, parameters, **kwargs):
-    base_url = config.service[service].url
+    base_url = config.services[service].url
     if service == "hf":
         base_url = f"{base_url}/{model}/v1"
     client = OpenAI(api_key=api_key, base_url=base_url)
@@ -52,23 +52,24 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
         headers["Authorization"] = f"Bearer {api_key}"
         json["prompt"] = inputs
 
-    base_url = config.service[service].url
+    base_url = config.services[service].url
 
     if service not in ["together"]:
         base_url = f"{base_url}/{model}"
 
     try:
-        response = httpx.post(base_url, headers=headers, json=json, timeout=config.txt2img.timeout)
+        timeout = config.timeout
+        response = httpx.post(base_url, headers=headers, json=json, timeout=timeout)
         if response.status_code // 100 == 2:  # 2xx
             # BFL is async so we need to poll for result
             # https://api.bfl.ml/docs
             if service == "bfl":
                 id = response.json()["id"]
-                url = f"{config.service[service].url}/get_result?id={id}"
+                url = f"{config.services[service].url}/get_result?id={id}"
 
                 retries = 0
-                while retries < config.txt2img.timeout:
-                    response = httpx.get(url, timeout=config.txt2img.timeout)
+                while retries < timeout:
+                    response = httpx.get(url, timeout=timeout)
                     if response.status_code // 100 != 2:
                         return f"Error: {response.status_code} {response.text}"
 
@@ -76,7 +77,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
                         image = httpx.get(
                             response.json()["result"]["sample"],
                             headers=headers,
-                            timeout=config.txt2img.timeout,
+                            timeout=timeout,
                         )
                         return Image.open(io.BytesIO(image.content))
 
@@ -92,7 +93,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
                     return Image.open(io.BytesIO(bytes))
                 else:
                     url = response.json()["images"][0]["url"]
-                    image = httpx.get(url, headers=headers, timeout=config.txt2img.timeout)
+                    image = httpx.get(url, headers=headers, timeout=timeout)
                     return Image.open(io.BytesIO(image.content))
 
             if service == "hf":
@@ -100,7 +101,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
 
             if service == "together":
                 url = response.json()["data"][0]["url"]
-                image = httpx.get(url, headers=headers, timeout=config.txt2img.timeout)
+                image = httpx.get(url, headers=headers, timeout=timeout)
                 return Image.open(io.BytesIO(image.content))
 
         else:
