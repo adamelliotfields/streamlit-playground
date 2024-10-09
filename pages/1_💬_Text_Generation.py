@@ -4,16 +4,17 @@ import streamlit as st
 
 from lib import config, txt2txt_generate
 
-# config
 st.set_page_config(
     page_title=f"{config.title} | Text Generation",
     page_icon=config.logo,
     layout=config.layout,
 )
 
-# initialize state
 if "api_key_hf" not in st.session_state:
     st.session_state.api_key_hf = ""
+
+if "api_key_openai" not in st.session_state:
+    st.session_state.api_key_openai = ""
 
 if "api_key_pplx" not in st.session_state:
     st.session_state.api_key_pplx = ""
@@ -27,7 +28,6 @@ if "txt2txt_messages" not in st.session_state:
 if "txt2txt_seed" not in st.session_state:
     st.session_state.txt2txt_seed = 0
 
-# sidebar
 st.logo(config.logo)
 st.sidebar.header("Settings")
 
@@ -74,7 +74,12 @@ system = st.sidebar.text_area(
     disabled=st.session_state.running,
 )
 
-# build parameters from preset
+st.html("""
+    <h1>Text Generation</h1>
+    <p>Chat with large language models.</p>
+""")
+
+# Build parameters from preset by rendering the appropriate input widgets
 parameters = {}
 for param in model_config.parameters:
     if param == "max_tokens":
@@ -107,6 +112,16 @@ for param in model_config.parameters:
             disabled=st.session_state.running,
             help="Penalize new tokens based on their existing frequency in the text (default: 0.0)",
         )
+    if param == "presence_penalty":
+        parameters[param] = st.sidebar.slider(
+            "Presence Penalty",
+            step=0.1,
+            value=model_config.presence_penalty,
+            min_value=model_config.presence_penalty_range[0],
+            max_value=model_config.presence_penalty_range[1],
+            disabled=st.session_state.running,
+            help="Penalize new tokens based on their presence in the text so far (default: 0.0)",
+        )
     if param == "seed":
         parameters[param] = st.sidebar.number_input(
             "Seed",
@@ -117,18 +132,12 @@ for param in model_config.parameters:
             help="Make a best effort to sample deterministically (default: -1)",
         )
 
-# heading
-st.html("""
-    <h1>Text Generation</h1>
-    <p>Chat with large language models.</p>
-""")
-
-# chat messages
+# Chat messages
 for message in st.session_state.txt2txt_messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# button row
+# Buttons for deleting last message or clearing all messages
 if st.session_state.txt2txt_messages:
     button_container = st.empty()
     with button_container.container():
@@ -156,7 +165,7 @@ if st.session_state.txt2txt_messages:
 else:
     button_container = None
 
-# chat input
+# Chat input
 if prompt := st.chat_input(
     "What would you like to know?",
     on_submit=lambda: setattr(st.session_state, "running", True),

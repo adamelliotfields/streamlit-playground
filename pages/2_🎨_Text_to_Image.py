@@ -10,7 +10,6 @@ st.set_page_config(
     layout=config.layout,
 )
 
-# Initialize Streamlit session state
 if "api_key_bfl" not in st.session_state:
     st.session_state.api_key_bfl = ""
 
@@ -72,7 +71,6 @@ model = st.sidebar.selectbox(
 
 model_config = service_config.image[model]
 
-# heading
 st.html("""
     <h1>Text to Image</h1>
     <p>Generate an image from a text prompt.</p>

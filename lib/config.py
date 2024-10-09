@@ -53,6 +53,8 @@ class TextModelConfig(ModelConfig):
     system_prompt: Optional[str] = None
     frequency_penalty: Optional[float] = None
     frequency_penalty_range: Optional[tuple[float, float]] = None
+    presence_penalty: Optional[float] = None
+    presence_penalty_range: Optional[tuple[float, float]] = None
     max_tokens: Optional[int] = None
     max_tokens_range: Optional[tuple[int, int]] = None
     temperature: Optional[float] = None
@@ -104,6 +106,19 @@ _hf_text_kwargs = {
     "temperature": 1.0,
     "temperature_range": (0.0, 2.0),
     "parameters": ["max_tokens", "temperature", "frequency_penalty", "seed"],
+}
+
+_openai_text_kwargs = {
+    "system_prompt": TEXT_SYSTEM_PROMPT,
+    "frequency_penalty": 0.0,
+    "frequency_penalty_range": (-2.0, 2.0),
+    "presence_penalty": 0.0,
+    "presence_penalty_range": (-2.0, 2.0),
+    "max_tokens": 512,
+    "max_tokens_range": (512, 4096),
+    "temperature": 1.0,
+    "temperature_range": (0.0, 2.0),
+    "parameters": ["max_tokens", "temperature", "frequency_penalty", "presence_penalty", "seed"],
 }
 
 _pplx_text_kwargs = {
@@ -302,18 +317,9 @@ config = AppConfig(
             url="https://api-inference.huggingface.co/models",
             api_key=os.environ.get("HF_TOKEN"),
             text={
-                "codellama/codellama-34b-instruct-hf": TextModelConfig(
-                    "Code Llama 34B",
-                    **_hf_text_kwargs,
-                ),
-                "meta-llama/llama-2-13b-chat-hf": TextModelConfig(
-                    "Meta Llama 2 13B",
-                    **_hf_text_kwargs,
-                ),
-                "mistralai/mistral-7b-instruct-v0.2": TextModelConfig(
-                    "Mistral 0.2 7B",
-                    **_hf_text_kwargs,
-                ),
+                "codellama/codellama-34b-instruct-hf": TextModelConfig("Code Llama 34B", **_hf_text_kwargs),
+                "meta-llama/llama-2-13b-chat-hf": TextModelConfig("Meta Llama 2 13B", **_hf_text_kwargs),
+                "mistralai/mistral-7b-instruct-v0.2": TextModelConfig("Mistral 0.2 7B", **_hf_text_kwargs),
                 "nousresearch/nous-hermes-2-mixtral-8x7b-dpo": TextModelConfig(
                     "Nous Hermes 2 Mixtral 8x7B",
                     **_hf_text_kwargs,
@@ -365,6 +371,20 @@ config = AppConfig(
                 ),
             },
         ),
+        "openai": ServiceConfig(
+            name="OpenAI",
+            url="https://api.openai.com/v1",
+            api_key=os.environ.get("OPENAI_API_KEY"),
+            text={
+                "chatgpt-4o-latest": TextModelConfig("ChatGPT-4o", **_openai_text_kwargs),
+                "gpt-3.5-turbo": TextModelConfig("GPT-3.5 Turbo", **_openai_text_kwargs),
+                "gpt-4-turbo": TextModelConfig("GPT-4 Turbo", **_openai_text_kwargs),
+                "gpt-4o": TextModelConfig("GPT-4o", **_openai_text_kwargs),
+                "gpt-4o-mini": TextModelConfig("GPT-4o mini", **_openai_text_kwargs),
+                "o1-preview": TextModelConfig("o1-preview", **_openai_text_kwargs),
+                "o1-mini": TextModelConfig("o1-mini", **_openai_text_kwargs),
+            },
+        ),
         "pplx": ServiceConfig(
             name="Perplexity",
             url="https://api.perplexity.ai",
@@ -392,7 +412,7 @@ config = AppConfig(
                 ),
             },
         ),
-        # TODO: text models
+        # TODO: text models, more image models
         "together": ServiceConfig(
             name="Together",
             url="https://api.together.xyz/v1/images/generations",

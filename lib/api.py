@@ -12,6 +12,7 @@ from .config import config
 
 def txt2txt_generate(api_key, service, model, parameters, **kwargs):
     base_url = config.services[service].url
+
     if service == "hf":
         base_url = f"{base_url}/{model}/v1"
     client = OpenAI(api_key=api_key, base_url=base_url)

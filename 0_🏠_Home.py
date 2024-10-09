@@ -52,6 +52,7 @@ st.markdown("""
 - [Black Forest Labs](https://docs.bfl.ml)
 - [fal.ai](https://fal.ai/docs)
 - [Hugging Face](https://huggingface.co/docs/api-inference/index)
+- [OpenAI](https://platform.openai.com/docs/api-reference/introduction)
 - [Perplexity](https://docs.perplexity.ai/home)
 - [together.ai](https://docs.together.ai/docs/introduction)
 """)
@@ -59,7 +60,7 @@ st.markdown("""
 st.markdown("""
 ## Usage
 
-Choose a task. Select a service. Enter your API key (refresh browser to clear).
+Select a task. Choose a service. Enter your API key (refresh browser to clear).
 
 I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/api-inference?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/api-inference/blob/main/README.md).
 """)
