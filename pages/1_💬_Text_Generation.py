@@ -203,7 +203,7 @@ if prompt := st.chat_input(
     with st.chat_message("assistant"):
         session_key = f"api_key_{service}"
         api_key = st.session_state[session_key] or text_services[service].api_key
-        response = txt2txt_generate(api_key, service, model, parameters)
+        response = txt2txt_generate(api_key, service, parameters)
         st.session_state.running = False
 
     st.session_state.txt2txt_messages.append({"role": "user", "content": prompt})

@@ -14,10 +14,11 @@ from .config import config
 
 
 def txt2txt_generate(api_key, service, parameters, **kwargs):
+    model = parameters.get("model", "")
     base_url = config.services[service].url
 
     if service == "hf":
-        base_url = f"{base_url}/{parameters['model']}/v1"
+        base_url = f"{base_url}/{model}/v1"
 
     try:
         if service == "anthropic":
