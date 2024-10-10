@@ -49,6 +49,7 @@ st.page_link("pages/2_🎨_Text_to_Image.py", label="Text to Image", icon="🎨"
 st.markdown("""
 ## Services
 
+- [Anthropic](https://docs.anthropic.com/en/api/getting-started)
 - [Black Forest Labs](https://docs.bfl.ml)
 - [fal.ai](https://fal.ai/docs)
 - [Hugging Face](https://huggingface.co/docs/api-inference/index)

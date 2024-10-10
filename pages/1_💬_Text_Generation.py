@@ -10,6 +10,9 @@ st.set_page_config(
     layout=config.layout,
 )
 
+if "api_key_anthropic" not in st.session_state:
+    st.session_state.api_key_anthropic = ""
+
 if "api_key_hf" not in st.session_state:
     st.session_state.api_key_hf = ""
 
@@ -80,7 +83,7 @@ st.html("""
 """)
 
 # Build parameters from preset by rendering the appropriate input widgets
-parameters = {}
+parameters = {"model": model}
 for param in model_config.parameters:
     if param == "max_tokens":
         parameters[param] = st.sidebar.slider(
@@ -92,6 +95,7 @@ for param in model_config.parameters:
             disabled=st.session_state.running,
             help="Maximum number of tokens to generate (default: 512)",
         )
+
     if param == "temperature":
         parameters[param] = st.sidebar.slider(
             "Temperature",
@@ -102,6 +106,7 @@ for param in model_config.parameters:
             disabled=st.session_state.running,
             help="Used to modulate the next token probabilities (default: 1.0)",
         )
+
     if param == "frequency_penalty":
         parameters[param] = st.sidebar.slider(
             "Frequency Penalty",
@@ -112,6 +117,7 @@ for param in model_config.parameters:
             disabled=st.session_state.running,
             help="Penalize new tokens based on their existing frequency in the text (default: 0.0)",
         )
+
     if param == "presence_penalty":
         parameters[param] = st.sidebar.slider(
             "Presence Penalty",
@@ -122,6 +128,7 @@ for param in model_config.parameters:
             disabled=st.session_state.running,
             help="Penalize new tokens based on their presence in the text so far (default: 0.0)",
         )
+
     if param == "seed":
         parameters[param] = st.sidebar.number_input(
             "Seed",
@@ -180,7 +187,12 @@ if prompt := st.chat_input(
     if button_container:
         button_container.empty()
 
-    messages = [{"role": "system", "content": system}]
+    if service == "anthropic":
+        messages = []
+        parameters["system"] = system
+    else:
+        messages = [{"role": "system", "content": system}]
+
     messages.extend([{"role": m["role"], "content": m["content"]} for m in st.session_state.txt2txt_messages])
     messages.append({"role": "user", "content": prompt})
     parameters["messages"] = messages

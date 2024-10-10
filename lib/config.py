@@ -97,6 +97,15 @@ class AppConfig:
     services: Dict[str, ServiceConfig]
 
 
+_anthropic_text_kwargs = {
+    "system_prompt": TEXT_SYSTEM_PROMPT,
+    "max_tokens": 512,
+    "max_tokens_range": (512, 4096),
+    "temperature": 0.5,
+    "temperature_range": (0.0, 1.0),
+    "parameters": ["max_tokens", "temperature"],
+}
+
 _hf_text_kwargs = {
     "system_prompt": TEXT_SYSTEM_PROMPT,
     "frequency_penalty": 0.0,
@@ -129,7 +138,7 @@ _pplx_text_kwargs = {
     "max_tokens_range": (512, 4096),
     "temperature": 1.0,
     "temperature_range": (0.0, 2.0),
-    "parameters": ["max_tokens", "temperature", "frequency_penalty", "seed"],
+    "parameters": ["max_tokens", "temperature", "frequency_penalty"],
 }
 
 config = AppConfig(
@@ -153,6 +162,17 @@ config = AppConfig(
         "sync_mode",
     ],
     services={
+        "anthropic": ServiceConfig(
+            name="Anthropic",
+            url="https://api.anthropic.com/v1",
+            api_key=os.environ.get("ANTHROPIC_API_KEY"),
+            text={
+                "claude-3-haiku-20240307": TextModelConfig("Claude 3 Haiku", **_anthropic_text_kwargs),
+                "claude-3-opus-20240229": TextModelConfig("Claude 3 Opus", **_anthropic_text_kwargs),
+                "claude-3-sonnet-20240229": TextModelConfig("Claude 3 Sonnet", **_anthropic_text_kwargs),
+                "claude-3-5-sonnet-20240620": TextModelConfig("Claude 3.5 Sonnet", **_anthropic_text_kwargs),
+            },
+        ),
         "bfl": ServiceConfig(
             name="Black Forest Labs",
             url="https://api.bfl.ml/v1",

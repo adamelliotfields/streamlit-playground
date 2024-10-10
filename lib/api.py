@@ -4,23 +4,33 @@ import time
 
 import httpx
 import streamlit as st
-from openai import APIError, OpenAI
+from anthropic import Anthropic
+from anthropic import APIError as AnthropicAPIError
+from openai import APIError as OpenAIAPIError
+from openai import OpenAI
 from PIL import Image
 
 from .config import config
 
 
-def txt2txt_generate(api_key, service, model, parameters, **kwargs):
+def txt2txt_generate(api_key, service, parameters, **kwargs):
     base_url = config.services[service].url
 
     if service == "hf":
-        base_url = f"{base_url}/{model}/v1"
-    client = OpenAI(api_key=api_key, base_url=base_url)
+        base_url = f"{base_url}/{parameters['model']}/v1"
 
     try:
-        stream = client.chat.completions.create(stream=True, model=model, **parameters, **kwargs)
-        return st.write_stream(stream)
-    except APIError as e:
+        if service == "anthropic":
+            client = Anthropic(api_key=api_key)
+            with client.messages.stream(**parameters, **kwargs) as stream:
+                return st.write_stream(stream.text_stream)
+        else:
+            client = OpenAI(api_key=api_key, base_url=base_url)
+            stream = client.chat.completions.create(stream=True, **parameters, **kwargs)
+            return st.write_stream(stream)
+    except AnthropicAPIError as e:
+        return e.message
+    except OpenAIAPIError as e:
         # OpenAI uses this message for streaming errors and attaches response.error to error.body
         # https://github.com/openai/openai-python/blob/v1.0.0/src/openai/_streaming.py#L59
         return e.body if e.message == "An error occurred during streaming" else e.message
