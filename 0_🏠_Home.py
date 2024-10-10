@@ -3,7 +3,7 @@ import streamlit as st
 from lib import config
 
 st.set_page_config(
-    page_title=config.title,
+    page_title=f"Home - {config.title}",
     page_icon=config.logo,
     layout=config.layout,
 )
@@ -14,6 +14,7 @@ st.logo(config.logo)
 # title
 st.html("""
 <style>
+/* https://huggingface.co/subscribe/pro */
 .pro-badge {
     display: inline-block;
     transform: skew(-12deg);
@@ -36,10 +37,10 @@ st.html("""
 }
 </style>
 <div style="display: flex; align-items: center; gap: 0.75rem">
-    <h1>API Inference</h1>
-    <span class="pro-badge">PRO</span>
+    <h1>Playground</h1>
+    <span class="pro-badge">API</span>
 </div>
-<p>Explore popular AI endpoints in one place.</p>
+<p>Explore popular generative AI endpoints.</p>
 """)
 
 st.markdown("## Tasks")
@@ -63,5 +64,5 @@ st.markdown("""
 
 Select a task. Choose a service. Enter your API key (refresh browser to clear).
 
-I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/api-inference?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/api-inference/blob/main/README.md).
+I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/playground?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/playground/blob/main/README.md).
 """)

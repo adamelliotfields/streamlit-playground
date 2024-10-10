@@ -1,10 +1,10 @@
 ---
 # https://huggingface.co/docs/hub/en/spaces-config-reference
-title: API Inference
-short_description: Inference on many API endpoints
+title: Playground
+short_description: Explore popular generative AI endpoints
 emoji: ⚡
 colorFrom: blue
-colorTo: green
+colorTo: pink
 sdk: streamlit
 sdk_version: 1.37.1
 python_version: 3.11.9
@@ -17,8 +17,9 @@ license: apache-2.0
 models:
   - black-forest-labs/FLUX.1-schnell
   - black-forest-labs/FLUX.1-dev
+  - stabilityai/stable-diffusion-xl-base-1.0
 ---
-# ⚡ API Inference
+# ⚡ Playground
 
 [Streamlit](https://streamlit.io) app for running inference on generative AI endpoints.
 
@@ -42,8 +43,8 @@ Recommend [uv](https://github.com/astral-sh/uv).
 
 ```sh
 # clone
-git clone https://huggingface.co/spaces/adamelliotfields/api-inference.git
-cd api-inference
+git clone https://huggingface.co/spaces/adamelliotfields/playground.git
+cd playground
 
 # install
 uv venv
@@ -57,5 +58,5 @@ python 0_🏠_Home.py
 ## Development
 
 ```sh
-git remote set-url origin https://adamelliotfields:$HF_TOKEN@huggingface.co/spaces/adamelliotfields/api-inference
+git remote set-url origin https://adamelliotfields:$HF_TOKEN@huggingface.co/spaces/adamelliotfields/playground
 ```

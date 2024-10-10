@@ -5,7 +5,7 @@ import streamlit as st
 from lib import config, txt2img_generate
 
 st.set_page_config(
-    page_title=f"{config.title} | Text to Image",
+    page_title=f"Text to Image - {config.title}",
     page_icon=config.logo,
     layout=config.layout,
 )

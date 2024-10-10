@@ -142,7 +142,7 @@ _pplx_text_kwargs = {
 }
 
 config = AppConfig(
-    title="API Inference",
+    title="Playground",
     layout="wide",
     logo="logo.png",
     timeout=60,
