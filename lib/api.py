@@ -1,6 +1,5 @@
-import base64
-import io
 import time
+from io import BytesIO
 
 import httpx
 import streamlit as st
@@ -11,6 +10,7 @@ from openai import OpenAI
 from PIL import Image
 
 from .config import config
+from .util import base64_decode_image_data_url
 
 
 def txt2txt_generate(api_key, service, parameters, **kwargs):
@@ -72,6 +72,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
     try:
         timeout = config.timeout
         response = httpx.post(base_url, headers=headers, json=json, timeout=timeout)
+
         if response.status_code // 100 == 2:  # 2xx
             # BFL is async so we need to poll for result
             # https://api.bfl.ml/docs
@@ -91,7 +92,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
                             headers=headers,
                             timeout=timeout,
                         )
-                        return Image.open(io.BytesIO(image.content))
+                        return Image.open(BytesIO(image.content))
 
                     retries += 1
                     time.sleep(1)
@@ -100,21 +101,20 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
 
             if service == "fal":
                 # Sync mode means wait for image base64 string instead of CDN link
+                url = response.json()["images"][0]["url"]
                 if parameters.get("sync_mode", True):
-                    bytes = base64.b64decode(response.json()["images"][0]["url"].split(",")[-1])
-                    return Image.open(io.BytesIO(bytes))
+                    return base64_decode_image_data_url(url)
                 else:
-                    url = response.json()["images"][0]["url"]
                     image = httpx.get(url, headers=headers, timeout=timeout)
-                    return Image.open(io.BytesIO(image.content))
+                    return Image.open(BytesIO(image.content))
 
             if service == "hf":
-                return Image.open(io.BytesIO(response.content))
+                return Image.open(BytesIO(response.content))
 
             if service == "together":
                 url = response.json()["data"][0]["url"]
                 image = httpx.get(url, headers=headers, timeout=timeout)
-                return Image.open(io.BytesIO(image.content))
+                return Image.open(BytesIO(image.content))
 
         else:
             return f"Error: {response.status_code} {response.text}"

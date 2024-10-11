@@ -6,7 +6,9 @@ TEXT_SYSTEM_PROMPT = "You are a helpful assistant. Be precise and concise."
 
 IMAGE_NEGATIVE_PROMPT = "ugly, unattractive, disfigured, deformed, mutated, malformed, blurry, grainy, oversaturated, undersaturated, overexposed, underexposed, worst quality, low details, lowres, watermark, signature, sloppy, cluttered"
 
-IMAGE_IMAGE_SIZES = [
+FOOOCUS_NEGATIVE_PROMPT = "(worst quality, low quality, normal quality, lowres, low details, oversaturated, undersaturated, overexposed, underexposed, grayscale, bw, bad photo, bad photography, bad art:1.4), (watermark, signature, text font, username, error, logo, words, letters, digits, autograph, trademark, name:1.2), (blur, blurry, grainy), morbid, ugly, asymmetrical, mutated malformed, mutilated, poorly lit, bad shadow, draft, cropped, out of frame, cut off, censored, jpeg artifacts, out of focus, glitch, duplicate, (airbrushed, cartoon, anime, semi-realistic, cgi, render, blender, digital art, manga, amateur:1.3), (3D ,3D Game, 3D Game Scene, 3D Character:1.1), (bad hands, bad anatomy, bad body, bad face, bad teeth, bad arms, bad legs, deformities:1.3)"
+
+IMAGE_SIZES = [
     "landscape_16_9",
     "landscape_4_3",
     "square_hd",
@@ -40,6 +42,8 @@ IMAGE_ASPECT_RATIOS = [
 
 IMAGE_RANGE = (256, 1408)
 
+STRENGTH_RANGE = (0.0, 1.0)
+
 
 @dataclass
 class ModelConfig:
@@ -68,6 +72,8 @@ class ImageModelConfig(ModelConfig):
     width_range: Optional[tuple[int, int]] = None
     height: Optional[int] = None
     height_range: Optional[tuple[int, int]] = None
+    strength: Optional[float] = None
+    strength_range: Optional[tuple[float, float]] = None
     image_size: Optional[str] = None
     image_sizes: Optional[List[str]] = field(default_factory=list)
     aspect_ratio: Optional[str] = None
@@ -149,6 +155,7 @@ config = AppConfig(
     hidden_parameters=[
         # Sent to API but not shown in generation parameters accordion
         "enable_safety_checker",
+        "image_url",
         "max_sequence_length",
         "n",
         "num_images",
@@ -223,17 +230,69 @@ config = AppConfig(
                 "fal-ai/aura-flow": ImageModelConfig(
                     "AuraFlow",
                     guidance_scale=3.5,
-                    guidance_scale_range=(1.0, 10.0),
-                    num_inference_steps=28,
-                    num_inference_steps_range=(10, 50),
+                    guidance_scale_range=(0.0, 20.0),
+                    num_inference_steps=50,
+                    num_inference_steps_range=(20, 50),
                     parameters=["seed", "num_inference_steps", "guidance_scale", "expand_prompt"],
                     kwargs={"num_images": 1, "sync_mode": False},
+                ),
+                "fal-ai/fast-sdxl": ImageModelConfig(
+                    "Fast SDXL",
+                    negative_prompt=IMAGE_NEGATIVE_PROMPT,
+                    image_size="square_hd",
+                    image_sizes=IMAGE_SIZES,
+                    guidance_scale=7.5,
+                    guidance_scale_range=(0.0, 20.0),
+                    num_inference_steps=25,
+                    num_inference_steps_range=(1, 50),
+                    parameters=[
+                        "seed",
+                        "negative_prompt",
+                        "image_size",
+                        "num_inference_steps",
+                        "guidance_scale",
+                        "expand_prompt",
+                    ],
+                    kwargs={
+                        "num_images": 1,
+                        "sync_mode": False,
+                        "enable_safety_checker": False,
+                        "output_format": "png",
+                    },
+                ),
+                "fal-ai/fast-sdxl/image-to-image": ImageModelConfig(
+                    "Fast SDXL (Image)",
+                    negative_prompt=IMAGE_NEGATIVE_PROMPT,
+                    image_size="square_hd",
+                    image_sizes=IMAGE_SIZES,
+                    strength=0.95,
+                    strength_range=STRENGTH_RANGE,
+                    guidance_scale=7.5,
+                    guidance_scale_range=(0.0, 20.0),
+                    num_inference_steps=25,
+                    num_inference_steps_range=(1, 50),
+                    parameters=[
+                        "seed",
+                        "negative_prompt",
+                        "image_size",
+                        "num_inference_steps",
+                        "guidance_scale",
+                        "strength",
+                        "expand_prompt",
+                        "image_url",
+                    ],
+                    kwargs={
+                        "num_images": 1,
+                        "sync_mode": False,
+                        "enable_safety_checker": False,
+                        "output_format": "png",
+                    },
                 ),
                 "fal-ai/flux-pro/v1.1": ImageModelConfig(
                     "FLUX1.1 Pro",
                     parameters=["seed", "image_size"],
                     image_size="square_hd",
-                    image_sizes=IMAGE_IMAGE_SIZES,
+                    image_sizes=IMAGE_SIZES,
                     kwargs={
                         "num_images": 1,
                         "sync_mode": False,
@@ -244,7 +303,7 @@ config = AppConfig(
                 "fal-ai/flux-pro": ImageModelConfig(
                     "FLUX.1 Pro",
                     image_size="square_hd",
-                    image_sizes=IMAGE_IMAGE_SIZES,
+                    image_sizes=IMAGE_SIZES,
                     guidance_scale=2.5,
                     guidance_scale_range=(1.5, 5.0),
                     num_inference_steps=40,
@@ -255,18 +314,38 @@ config = AppConfig(
                 "fal-ai/flux/dev": ImageModelConfig(
                     "FLUX.1 Dev",
                     image_size="square_hd",
-                    image_sizes=IMAGE_IMAGE_SIZES,
+                    image_sizes=IMAGE_SIZES,
                     num_inference_steps=28,
                     num_inference_steps_range=(10, 50),
                     guidance_scale=3.0,
                     guidance_scale_range=(1.5, 5.0),
                     parameters=["seed", "image_size", "num_inference_steps", "guidance_scale"],
-                    kwargs={"num_images": 1, "sync_mode": False, "safety_tolerance": 6},
+                    kwargs={"num_images": 1, "sync_mode": False, "enable_safety_checker": False},
+                ),
+                "fal-ai/flux/dev/image-to-image": ImageModelConfig(
+                    "FLUX.1 Dev (Image)",
+                    image_size="square_hd",
+                    image_sizes=IMAGE_SIZES,
+                    strength=0.95,
+                    strength_range=STRENGTH_RANGE,
+                    num_inference_steps=28,
+                    num_inference_steps_range=(10, 50),
+                    guidance_scale=3.0,
+                    guidance_scale_range=(1.5, 5.0),
+                    parameters=[
+                        "seed",
+                        "image_size",
+                        "num_inference_steps",
+                        "guidance_scale",
+                        "strength",
+                        "image_url",
+                    ],
+                    kwargs={"num_images": 1, "sync_mode": False, "enable_safety_checker": False},
                 ),
                 "fal-ai/flux/schnell": ImageModelConfig(
                     "FLUX.1 Schnell",
                     image_size="square_hd",
-                    image_sizes=IMAGE_IMAGE_SIZES,
+                    image_sizes=IMAGE_SIZES,
                     num_inference_steps=4,
                     num_inference_steps_range=(1, 12),
                     parameters=["seed", "image_size", "num_inference_steps"],
@@ -274,6 +353,7 @@ config = AppConfig(
                 ),
                 "fal-ai/fooocus": ImageModelConfig(
                     "Fooocus",
+                    negative_prompt=FOOOCUS_NEGATIVE_PROMPT,
                     aspect_ratio="1024x1024",
                     aspect_ratios=IMAGE_ASPECT_RATIOS,
                     guidance_scale=4.0,
@@ -292,8 +372,9 @@ config = AppConfig(
                 ),
                 "fal-ai/kolors": ImageModelConfig(
                     "Kolors",
+                    negative_prompt=IMAGE_NEGATIVE_PROMPT,
                     image_size="square_hd",
-                    image_sizes=IMAGE_IMAGE_SIZES,
+                    image_sizes=IMAGE_SIZES,
                     guidance_scale=5.0,
                     guidance_scale_range=(1.0, 10.0),
                     num_inference_steps=50,
@@ -313,9 +394,9 @@ config = AppConfig(
                     },
                 ),
                 "fal-ai/stable-diffusion-v3-medium": ImageModelConfig(
-                    "SD3",
+                    "SD3 Medium",
                     image_size="square_hd",
-                    image_sizes=IMAGE_IMAGE_SIZES,
+                    image_sizes=IMAGE_SIZES,
                     guidance_scale=5.0,
                     guidance_scale_range=(1.0, 10.0),
                     num_inference_steps=28,

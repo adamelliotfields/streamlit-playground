@@ -2,7 +2,7 @@ from datetime import datetime
 
 import streamlit as st
 
-from lib import config, txt2img_generate
+from lib import base64_encode_image_file, config, txt2img_generate
 
 st.set_page_config(
     page_title=f"Text to Image - {config.title}",
@@ -81,6 +81,7 @@ parameters = {}
 for param in model_config.parameters:
     if param == "model":
         parameters[param] = model
+
     if param == "seed":
         parameters[param] = st.sidebar.number_input(
             "Seed",
@@ -89,12 +90,14 @@ for param in model_config.parameters:
             value=-1,
             disabled=st.session_state.running,
         )
+
     if param == "negative_prompt":
         parameters[param] = st.sidebar.text_area(
             "Negative Prompt",
             value=model_config.negative_prompt,
             disabled=st.session_state.running,
         )
+
     if param == "width":
         parameters[param] = st.sidebar.slider(
             "Width",
@@ -104,6 +107,7 @@ for param in model_config.parameters:
             max_value=model_config.width_range[1],
             disabled=st.session_state.running,
         )
+
     if param == "height":
         parameters[param] = st.sidebar.slider(
             "Height",
@@ -113,6 +117,7 @@ for param in model_config.parameters:
             max_value=model_config.height_range[1],
             disabled=st.session_state.running,
         )
+
     if param == "image_size":
         parameters[param] = st.sidebar.select_slider(
             "Image Size",
@@ -120,6 +125,7 @@ for param in model_config.parameters:
             value=model_config.image_size,
             disabled=st.session_state.running,
         )
+
     if param == "aspect_ratio":
         parameters[param] = st.sidebar.select_slider(
             "Aspect Ratio",
@@ -127,6 +133,7 @@ for param in model_config.parameters:
             value=model_config.aspect_ratio,
             disabled=st.session_state.running,
         )
+
     if param in ["guidance_scale", "guidance"]:
         parameters[param] = st.sidebar.slider(
             "Guidance Scale",
@@ -136,6 +143,7 @@ for param in model_config.parameters:
             0.1,
             disabled=st.session_state.running,
         )
+
     if param in ["num_inference_steps", "steps"]:
         parameters[param] = st.sidebar.slider(
             "Inference Steps",
@@ -145,18 +153,40 @@ for param in model_config.parameters:
             1,
             disabled=st.session_state.running,
         )
+
+    if param == "strength":
+        parameters[param] = st.sidebar.slider(
+            "Strength",
+            model_config.strength_range[0],
+            model_config.strength_range[1],
+            model_config.strength,
+            0.05,
+            disabled=st.session_state.running,
+        )
+
     if param in ["expand_prompt", "prompt_expansion"]:
         parameters[param] = st.sidebar.checkbox(
             "Prompt Expansion",
             value=False,
             disabled=st.session_state.running,
         )
+
     if param == "prompt_upsampling":
         parameters[param] = st.sidebar.checkbox(
             "Prompt Upsampling",
             value=False,
             disabled=st.session_state.running,
         )
+
+    if param == "image_url":
+        image_file = st.sidebar.file_uploader(
+            "Image",
+            type=["bmp", "gif", "jpg", "jpeg", "png", "webp"],
+            accept_multiple_files=False,
+            disabled=st.session_state.running,
+        )
+        if image_file:
+            parameters[param] = base64_encode_image_file(image_file)
 
 # Wrap the prompt in an accordion to display additional parameters
 for message in st.session_state.txt2img_messages:
