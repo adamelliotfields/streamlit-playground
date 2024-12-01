@@ -3,4 +3,4 @@ h2
 httpx
 openai==1.41.0
 pillow
-streamlit==1.37.1
+streamlit==1.40.2
