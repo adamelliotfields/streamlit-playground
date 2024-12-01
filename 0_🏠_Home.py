@@ -4,18 +4,18 @@ from lib import config
 
 st.set_page_config(
     page_title=f"Home - {config.title}",
-    page_icon=config.logo,
+    page_icon=config.icon,
     layout=config.layout,
 )
 
 # sidebar
-st.logo(config.logo)
+st.logo(config.logo, size="small")
 
 # title
 st.html("""
 <style>
-/* https://huggingface.co/subscribe/pro */
 .pro-badge {
+    /* https://huggingface.co/subscribe/pro */
     display: inline-block;
     transform: skew(-12deg);
     font-size: 0.875rem;
@@ -28,19 +28,15 @@ st.html("""
     background-image: linear-gradient(to bottom right, #f9a8d4, #a7f3d0, #fde68a);
     border: 1px solid rgb(229 231 235 / 1);
 }
-@media (prefers-color-scheme: dark) {
-    .pro-badge {
-        box-shadow: 0 0 #0000, 0 0 #0000, 0 10px 15px -3px rgb(16 185 129 / .2), 0 4px 6px -4px rgb(16 185 129 / .2);
-        background-image: linear-gradient(to bottom right, #ec4899, #10b981, #f59e0b);
-        border: 1px solid rgb(20 28 46 / 1);
-    }
-}
 </style>
 <div style="display: flex; align-items: center; gap: 0.75rem">
     <h1>Playground</h1>
     <span class="pro-badge">API</span>
 </div>
 <p>Explore popular generative AI endpoints.</p>
+<a href="https://huggingface.co/spaces/adamelliotfields/playground?duplicate=true" target="_blank" rel="noopener noreferrer">
+    <img src="https://huggingface.co/datasets/huggingface/badges/resolve/main/duplicate-this-space-md.svg" alt="Duplicate this Space" />
+</a>
 """)
 
 st.markdown("## Tasks")
@@ -57,9 +53,7 @@ st.markdown("""
 - [OpenAI](https://platform.openai.com/docs/api-reference/introduction)
 - [Perplexity](https://docs.perplexity.ai/home)
 - [together.ai](https://docs.together.ai/docs/introduction)
-""")
 
-st.markdown("""
 ## Usage
 
 Select a task. Choose a service. Enter your API key (refresh browser to clear).

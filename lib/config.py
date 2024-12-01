@@ -98,6 +98,7 @@ class AppConfig:
     title: str
     layout: str
     logo: str
+    icon: str
     timeout: int
     hidden_parameters: List[str]
     services: Dict[str, ServiceConfig]
@@ -150,7 +151,8 @@ _pplx_text_kwargs = {
 config = AppConfig(
     title="Playground",
     layout="wide",
-    logo="logo.png",
+    logo="logo.svg",
+    icon="⚡",
     timeout=60,
     hidden_parameters=[
         # Sent to API but not shown in generation parameters accordion

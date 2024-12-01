@@ -6,7 +6,7 @@ from lib import config, txt2txt_generate
 
 st.set_page_config(
     page_title=f"Text Generation - {config.title}",
-    page_icon=config.logo,
+    page_icon=config.icon,
     layout=config.layout,
 )
 

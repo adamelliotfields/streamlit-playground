@@ -6,7 +6,7 @@ from lib import base64_encode_image_file, config, txt2img_generate
 
 st.set_page_config(
     page_title=f"Text to Image - {config.title}",
-    page_icon=config.logo,
+    page_icon=config.icon,
     layout=config.layout,
 )
 
