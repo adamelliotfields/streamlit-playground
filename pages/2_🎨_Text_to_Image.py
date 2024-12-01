@@ -31,7 +31,7 @@ if "txt2img_messages" not in st.session_state:
 if "txt2img_seed" not in st.session_state:
     st.session_state.txt2img_seed = 0
 
-st.logo(config.logo)
+st.logo(config.logo, size="small")
 st.sidebar.header("Settings")
 
 image_services = {

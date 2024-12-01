@@ -31,7 +31,7 @@ if "txt2txt_messages" not in st.session_state:
 if "txt2txt_seed" not in st.session_state:
     st.session_state.txt2txt_seed = 0
 
-st.logo(config.logo)
+st.logo(config.logo, size="small")
 st.sidebar.header("Settings")
 
 text_services = {
