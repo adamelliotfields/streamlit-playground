@@ -6,18 +6,14 @@ emoji: ⚡
 colorFrom: blue
 colorTo: pink
 sdk: streamlit
-sdk_version: 1.37.1
+sdk_version: 1.40.2
 python_version: 3.11.9
 suggested_hardware: cpu-basic
 app_file: 0_🏠_Home.py
 full_width: true
-pinned: true
+pinned: false
 header: default
 license: apache-2.0
-models:
-  - black-forest-labs/FLUX.1-schnell
-  - black-forest-labs/FLUX.1-dev
-  - stabilityai/stable-diffusion-xl-base-1.0
 ---
 # ⚡ Playground
 
@@ -43,7 +39,7 @@ Recommend [uv](https://github.com/astral-sh/uv).
 
 ```sh
 # clone
-git clone https://huggingface.co/spaces/adamelliotfields/playground.git
+git clone https://huggingface.co/spaces/adamelliotfields/playground-template.git
 cd playground
 
 # install
@@ -58,5 +54,5 @@ python 0_🏠_Home.py
 ## Development
 
 ```sh
-git remote set-url origin https://adamelliotfields:$HF_TOKEN@huggingface.co/spaces/adamelliotfields/playground
+git remote set-url origin https://adamelliotfields:$HF_TOKEN@huggingface.co/spaces/adamelliotfields/playground-template
 ```
