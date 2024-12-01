@@ -30,16 +30,17 @@ st.html("""
 }
 </style>
 <div style="display: flex; align-items: center; gap: 0.75rem">
-    <h1>Playground</h1>
+    <h1 style="padding: 0">Playground</h1>
     <span class="pro-badge">API</span>
 </div>
-<p>Explore popular generative AI endpoints.</p>
-<a href="https://huggingface.co/spaces/adamelliotfields/playground?duplicate=true" target="_blank" rel="noopener noreferrer">
-    <img src="https://huggingface.co/datasets/huggingface/badges/resolve/main/duplicate-this-space-md.svg" alt="Duplicate this Space" />
-</a>
 """)
 
-st.markdown("## Tasks")
+st.markdown("""
+[![Duplicate this Space](https://huggingface.co/datasets/huggingface/badges/resolve/main/duplicate-this-space-md.svg)](https://huggingface.co/spaces/adamelliotfields/playground-template?duplicate=true)
+
+## Tasks
+""")
+
 st.page_link("pages/1_💬_Text_Generation.py", label="Text Generation", icon="💬")
 st.page_link("pages/2_🎨_Text_to_Image.py", label="Text to Image", icon="🎨")
 
@@ -58,5 +59,5 @@ st.markdown("""
 
 Select a task. Choose a service. Enter your API key (refresh browser to clear).
 
-I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/playground?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/playground/blob/main/README.md).
+I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/playground-template?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/playground-template/blob/main/README.md).
 """)
