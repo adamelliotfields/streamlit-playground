@@ -35,11 +35,7 @@ st.html("""
 </div>
 """)
 
-st.markdown("""
-[![Duplicate this Space](https://huggingface.co/datasets/huggingface/badges/resolve/main/duplicate-this-space-md.svg)](https://huggingface.co/spaces/adamelliotfields/playground-template?duplicate=true)
-
-## Tasks
-""")
+st.markdown("""## Tasks""")
 
 st.page_link("pages/1_💬_Text_Generation.py", label="Text Generation", icon="💬")
 st.page_link("pages/2_🎨_Text_to_Image.py", label="Text to Image", icon="🎨")
@@ -54,10 +50,4 @@ st.markdown("""
 - [OpenAI](https://platform.openai.com/docs/api-reference/introduction)
 - [Perplexity](https://docs.perplexity.ai/home)
 - [together.ai](https://docs.together.ai/docs/introduction)
-
-## Usage
-
-Select a task. Choose a service. Enter your API key (refresh browser to clear).
-
-I recommend [duplicating this space](https://huggingface.co/spaces/adamelliotfields/playground-template?duplicate=true) **privately** and persisting your keys as secrets. See [`README.md`](https://huggingface.co/spaces/adamelliotfields/playground-template/blob/main/README.md).
 """)

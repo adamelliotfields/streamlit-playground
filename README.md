@@ -35,11 +35,9 @@ TOGETHER_API_KEY=...
 
 ## Installation
 
-Recommend [uv](https://github.com/astral-sh/uv).
-
 ```sh
 # clone
-git clone https://huggingface.co/spaces/adamelliotfields/playground-template.git
+git clone https://huggingface.co/spaces/adamelliotfields/playground.git
 cd playground
 
 # install
@@ -54,5 +52,5 @@ python 0_🏠_Home.py
 ## Development
 
 ```sh
-git remote set-url origin https://adamelliotfields:$HF_TOKEN@huggingface.co/spaces/adamelliotfields/playground-template
+git remote set-url origin https://adamelliotfields:$HF_TOKEN@huggingface.co/spaces/adamelliotfields/playground
 ```
