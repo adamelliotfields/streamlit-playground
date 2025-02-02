@@ -493,24 +493,16 @@ config = AppConfig(
             url="https://api.perplexity.ai",
             api_key=os.environ.get("PPLX_API_KEY"),
             text={
-                "llama-3.1-sonar-small-128k-chat": TextModelConfig(
-                    "Sonar Small (Offline)",
+                "sonar-reasoning": TextModelConfig(
+                    "Sonar Reasoning",
                     **_pplx_text_kwargs,
                 ),
-                "llama-3.1-sonar-large-128k-chat": TextModelConfig(
-                    "Sonar Large (Offline)",
+                "sonar-pro": TextModelConfig(
+                    "Sonar Pro",
                     **_pplx_text_kwargs,
                 ),
-                "llama-3.1-sonar-small-128k-online": TextModelConfig(
-                    "Sonar Small (Online)",
-                    **_pplx_text_kwargs,
-                ),
-                "llama-3.1-sonar-large-128k-online": TextModelConfig(
-                    "Sonar Large (Online)",
-                    **_pplx_text_kwargs,
-                ),
-                "llama-3.1-sonar-huge-128k-online": TextModelConfig(
-                    "Sonar Huge (Online)",
+                "sonar": TextModelConfig(
+                    "Sonar",
                     **_pplx_text_kwargs,
                 ),
             },
