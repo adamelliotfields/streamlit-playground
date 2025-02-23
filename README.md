@@ -17,7 +17,7 @@ license: apache-2.0
 ---
 # ⚡ Playground
 
-[Streamlit](https://streamlit.io) app for running inference on generative AI endpoints.
+This is a [Streamlit](https://streamlit.io) app I made to explore generative AI services and models. For actual usage, I recommend Hugging Face's [playground](https://huggingface.co/playground) and [inference providers](https://huggingface.co/blog/inference-providers).
 
 ## Secrets
 
@@ -50,6 +50,8 @@ python 0_🏠_Home.py
 ```
 
 ## Development
+
+Update the origin URL with authentication.
 
 ```sh
 git remote set-url origin https://adamelliotfields:$HF_TOKEN@huggingface.co/spaces/adamelliotfields/playground
