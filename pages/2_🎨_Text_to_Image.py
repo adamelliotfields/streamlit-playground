@@ -6,7 +6,6 @@ from lib import base64_encode_image_file, config, txt2img_generate
 
 st.set_page_config(
     page_title=f"Text to Image - {config.title}",
-    page_icon=config.icon,
     layout=config.layout,
 )
 
@@ -34,24 +33,24 @@ if "txt2img_seed" not in st.session_state:
 st.logo(config.logo, size="small")
 st.sidebar.header("Settings")
 
-image_services = {
-    service_id: service_config
-    for service_id, service_config in config.services.items()
-    if getattr(service_config, "image", None)
+image_providers = {
+    provider_id: provider_config
+    for provider_id, provider_config in config.providers.items()
+    if getattr(provider_config, "image", None)
 }
 
-service = st.sidebar.selectbox(
-    "Service",
-    options=image_services.keys(),
-    format_func=lambda x: image_services[x].name,
+provider = st.sidebar.selectbox(
+    "Provider",
+    options=image_providers.keys(),
+    format_func=lambda x: image_providers[x].name,
     disabled=st.session_state.running,
 )
 
-# Show the API key input for the selected service.
-for service_id, service_config in image_services.items():
-    if service == service_id:
-        session_key = f"api_key_{service}"
-        api_key = service_config.api_key
+# Show the API key input for the selected provider.
+for provider_id, provider_config in image_providers.items():
+    if provider == provider_id:
+        session_key = f"api_key_{provider}"
+        api_key = provider_config.api_key
         st.session_state[session_key] = st.sidebar.text_input(
             "API Key",
             type="password",
@@ -60,16 +59,16 @@ for service_id, service_config in image_services.items():
             help="Set by environment variable" if api_key else "Cleared on page refresh",
         )
 
-service_config = image_services[service]
+provider_config = image_providers[provider]
 
 model = st.sidebar.selectbox(
     "Model",
-    options=service_config.image.keys(),
-    format_func=lambda x: service_config.image[x].name,
+    options=provider_config.image.keys(),
+    format_func=lambda x: provider_config.image[x].name,
     disabled=st.session_state.running,
 )
 
-model_config = service_config.image[model]
+model_config = provider_config.image[model]
 
 st.html("""
     <h1>Text to Image</h1>
@@ -281,9 +280,9 @@ if prompt := st.chat_input(
         with st.spinner("Running..."):
             if model_config.kwargs:
                 parameters.update(model_config.kwargs)
-            session_key = f"api_key_{service}"
-            api_key = st.session_state[session_key] or image_services[service].api_key
-            image = txt2img_generate(api_key, service, model, prompt, parameters)
+            session_key = f"api_key_{provider}"
+            api_key = st.session_state[session_key] or image_providers[provider].api_key
+            image = txt2img_generate(api_key, provider, model, prompt, parameters)
         st.session_state.running = False
 
     st.session_state.txt2img_messages.append(

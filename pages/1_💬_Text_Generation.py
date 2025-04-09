@@ -6,7 +6,6 @@ from lib import config, txt2txt_generate
 
 st.set_page_config(
     page_title=f"Text Generation - {config.title}",
-    page_icon=config.icon,
     layout=config.layout,
 )
 
@@ -34,24 +33,24 @@ if "txt2txt_seed" not in st.session_state:
 st.logo(config.logo, size="small")
 st.sidebar.header("Settings")
 
-text_services = {
-    service_id: service_config
-    for service_id, service_config in config.services.items()
-    if getattr(service_config, "text", None)
+text_providers = {
+    provider_id: provider_config
+    for provider_id, provider_config in config.providers.items()
+    if getattr(provider_config, "text", None)
 }
 
-service = st.sidebar.selectbox(
-    "Service",
-    options=text_services.keys(),
-    format_func=lambda x: text_services[x].name,
+provider = st.sidebar.selectbox(
+    "Provider",
+    options=text_providers.keys(),
+    format_func=lambda x: text_providers[x].name,
     disabled=st.session_state.running,
 )
 
-# Show the API key input for the selected service.
-for service_id, service_preset in text_services.items():
-    if service == service_id:
-        session_key = f"api_key_{service}"
-        api_key = service_preset.api_key
+# Show the API key input for the selected provider.
+for provider_id, provider_preset in text_providers.items():
+    if provider == provider_id:
+        session_key = f"api_key_{provider}"
+        api_key = provider_preset.api_key
         st.session_state[session_key] = st.sidebar.text_input(
             "API Key",
             type="password",
@@ -60,16 +59,16 @@ for service_id, service_preset in text_services.items():
             help="Set by environment variable" if api_key else "Cleared on page refresh",
         )
 
-service_config = text_services[service]
+provider_config = text_providers[provider]
 
 model = st.sidebar.selectbox(
     "Model",
-    options=service_config.text.keys(),
-    format_func=lambda x: service_config.text[x].name,
+    options=provider_config.text.keys(),
+    format_func=lambda x: provider_config.text[x].name,
     disabled=st.session_state.running,
 )
 
-model_config = service_config.text[model]
+model_config = provider_config.text[model]
 
 system = st.sidebar.text_area(
     "System Message",
@@ -187,7 +186,7 @@ if prompt := st.chat_input(
     if button_container:
         button_container.empty()
 
-    if service == "anthropic":
+    if provider == "anthropic":
         messages = []
         parameters["system"] = system
     else:
@@ -201,9 +200,9 @@ if prompt := st.chat_input(
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        session_key = f"api_key_{service}"
-        api_key = st.session_state[session_key] or text_services[service].api_key
-        response = txt2txt_generate(api_key, service, parameters)
+        session_key = f"api_key_{provider}"
+        api_key = st.session_state[session_key] or text_providers[provider].api_key
+        response = txt2txt_generate(api_key, provider, parameters)
         st.session_state.running = False
 
     st.session_state.txt2txt_messages.append({"role": "user", "content": prompt})

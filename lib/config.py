@@ -85,7 +85,7 @@ class ImageModelConfig(ModelConfig):
 
 
 @dataclass
-class ServiceConfig:
+class ProviderConfig:
     name: str
     url: str
     api_key: Optional[str]
@@ -98,10 +98,9 @@ class AppConfig:
     title: str
     layout: str
     logo: str
-    icon: str
     timeout: int
     hidden_parameters: List[str]
-    services: Dict[str, ServiceConfig]
+    providers: Dict[str, ProviderConfig]
 
 
 _anthropic_text_kwargs = {
@@ -152,7 +151,6 @@ config = AppConfig(
     title="Playground",
     layout="wide",
     logo="logo.svg",
-    icon="⚡",
     timeout=60,
     hidden_parameters=[
         # Sent to API but not shown in generation parameters accordion
@@ -170,8 +168,8 @@ config = AppConfig(
         "styles",
         "sync_mode",
     ],
-    services={
-        "anthropic": ServiceConfig(
+    providers={
+        "anthropic": ProviderConfig(
             name="Anthropic",
             url="https://api.anthropic.com/v1",
             api_key=os.environ.get("ANTHROPIC_API_KEY"),
@@ -182,7 +180,7 @@ config = AppConfig(
                 "claude-3-5-sonnet-20240620": TextModelConfig("Claude 3.5 Sonnet", **_anthropic_text_kwargs),
             },
         ),
-        "bfl": ServiceConfig(
+        "bfl": ProviderConfig(
             name="Black Forest Labs",
             url="https://api.bfl.ml/v1",
             api_key=os.environ.get("BFL_API_KEY"),
@@ -224,7 +222,7 @@ config = AppConfig(
                 ),
             },
         ),
-        "fal": ServiceConfig(
+        "fal": ProviderConfig(
             name="Fal",
             url="https://fal.run",
             api_key=os.environ.get("FAL_KEY"),
@@ -415,7 +413,7 @@ config = AppConfig(
                 ),
             },
         ),
-        "hf": ServiceConfig(
+        "hf": ProviderConfig(
             name="Hugging Face",
             url="https://api-inference.huggingface.co/models",
             api_key=os.environ.get("HF_TOKEN"),
@@ -474,7 +472,7 @@ config = AppConfig(
                 ),
             },
         ),
-        "openai": ServiceConfig(
+        "openai": ProviderConfig(
             name="OpenAI",
             url="https://api.openai.com/v1",
             api_key=os.environ.get("OPENAI_API_KEY"),
@@ -488,7 +486,7 @@ config = AppConfig(
                 "o1-mini": TextModelConfig("o1-mini", **_openai_text_kwargs),
             },
         ),
-        "pplx": ServiceConfig(
+        "pplx": ProviderConfig(
             name="Perplexity",
             url="https://api.perplexity.ai",
             api_key=os.environ.get("PPLX_API_KEY"),
@@ -507,8 +505,7 @@ config = AppConfig(
                 ),
             },
         ),
-        # TODO: text models, more image models
-        "together": ServiceConfig(
+        "together": ProviderConfig(
             name="Together",
             url="https://api.together.xyz/v1/images/generations",
             api_key=os.environ.get("TOGETHER_API_KEY"),

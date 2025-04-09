@@ -13,15 +13,15 @@ from .config import config
 from .util import base64_decode_image_data_url
 
 
-def txt2txt_generate(api_key, service, parameters, **kwargs):
+def txt2txt_generate(api_key, provider, parameters, **kwargs):
     model = parameters.get("model", "")
-    base_url = config.services[service].url
+    base_url = config.providers[provider].url
 
-    if service == "hf":
+    if provider == "hf":
         base_url = f"{base_url}/{model}/v1"
 
     try:
-        if service == "anthropic":
+        if provider == "anthropic":
             client = Anthropic(api_key=api_key)
             with client.messages.stream(**parameters, **kwargs) as stream:
                 return st.write_stream(stream.text_stream)
@@ -39,19 +39,19 @@ def txt2txt_generate(api_key, service, parameters, **kwargs):
         return str(e)
 
 
-def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
+def txt2img_generate(api_key, provider, model, inputs, parameters, **kwargs):
     headers = {}
     json = {**parameters, **kwargs}
 
-    if service == "bfl":
+    if provider == "bfl":
         headers["x-key"] = api_key
         json["prompt"] = inputs
 
-    if service == "fal":
+    if provider == "fal":
         headers["Authorization"] = f"Key {api_key}"
         json["prompt"] = inputs
 
-    if service == "hf":
+    if provider == "hf":
         headers["Authorization"] = f"Bearer {api_key}"
         headers["X-Wait-For-Model"] = "true"
         headers["X-Use-Cache"] = "false"
@@ -60,13 +60,13 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
             "parameters": {**parameters, **kwargs},
         }
 
-    if service == "together":
+    if provider == "together":
         headers["Authorization"] = f"Bearer {api_key}"
         json["prompt"] = inputs
 
-    base_url = config.services[service].url
+    base_url = config.providers[provider].url
 
-    if service not in ["together"]:
+    if provider not in ["together"]:
         base_url = f"{base_url}/{model}"
 
     try:
@@ -76,9 +76,9 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
         if response.status_code // 100 == 2:  # 2xx
             # BFL is async so we need to poll for result
             # https://api.bfl.ml/docs
-            if service == "bfl":
+            if provider == "bfl":
                 id = response.json()["id"]
-                url = f"{config.services[service].url}/get_result?id={id}"
+                url = f"{config.providers[provider].url}/get_result?id={id}"
 
                 retries = 0
                 while retries < timeout:
@@ -99,7 +99,7 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
 
                 return "Error: API timeout"
 
-            if service == "fal":
+            if provider == "fal":
                 # Sync mode means wait for image base64 string instead of CDN link
                 url = response.json()["images"][0]["url"]
                 if parameters.get("sync_mode", True):
@@ -108,10 +108,10 @@ def txt2img_generate(api_key, service, model, inputs, parameters, **kwargs):
                     image = httpx.get(url, headers=headers, timeout=timeout)
                     return Image.open(BytesIO(image.content))
 
-            if service == "hf":
+            if provider == "hf":
                 return Image.open(BytesIO(response.content))
 
-            if service == "together":
+            if provider == "together":
                 url = response.json()["data"][0]["url"]
                 image = httpx.get(url, headers=headers, timeout=timeout)
                 return Image.open(BytesIO(image.content))
